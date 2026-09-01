@@ -3057,33 +3057,59 @@ MonoBehaviour:
   comboTimeout: 0.45
   comboDuration: 0.3
   mouseSensitivity: 15
---- !u!54 &150407973
-Rigidbody:
+  speed: 0
+  decelerationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0.18623704
+      outSlope: 0.18623704
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.064964466
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -0.12683061
+      outSlope: -0.12683061
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.1336515
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  stopDuration: 1
+  decelerationTime: 2
+  increseSpeedPerCombo: 0.5
+--- !u!143 &150407973
+CharacterController:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 150407967}
-  serializedVersion: 4
-  m_Mass: 0.05
-  m_Drag: 1.5
-  m_AngularDrag: 0.15
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 112
-  m_CollisionDetection: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 1
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &151223485
 GameObject:
   m_ObjectHideFlags: 0

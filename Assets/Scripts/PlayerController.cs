@@ -7,8 +7,7 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField]
     private PlayerInput playerInput;
-    private Rigidbody rigid;
-
+    private CharacterController cc;
 
     [SerializeField]
     private bool comboAvailable = true;
@@ -36,19 +35,53 @@ public class PlayerController : MonoBehaviour
     private bool leftPressed = false;
 
 
+    [SerializeField] private float speed;
+    [SerializeField] private AnimationCurve decelerationCurve;
+    [SerializeField] float stopDuration = 1f;
+    [SerializeField] float decelerationTime;
+    [SerializeField] private float increseSpeedPerCombo;
+    bool isDecelerating;
+
+    void Update()
+    {
+        if (isDecelerating)
+        {
+            if (comboCnt != 0)
+            {
+                isDecelerating = false;
+            }
+            else
+            {
+                decelerationTime += Time.deltaTime;
+
+                float t = Mathf.Clamp01(decelerationTime / stopDuration);
+                speed *= decelerationCurve.Evaluate(t);
+
+                if (t >= 1f)
+                {
+                    speed = 0f;
+                    isDecelerating = false;
+                    return;
+                }
+            }
+        }
+        cc.Move(transform.forward * speed * Time.deltaTime);
+    }
+
+
     void Start()
     {
-        rigid = GetComponent<Rigidbody>();  
+        cc = GetComponent<CharacterController>();
         playerInput.actions["Left"].performed += OnLeft;
         playerInput.actions["Right"].performed += OnRight;
         playerInput.actions["Rotate"].performed += OnRotate;        
     }
 
-    private void InitVelocity()
+    private void BreakCombo()
     {
-        rigid.linearVelocity = Vector3.zero;
+        decelerationTime = 0f;
+        isDecelerating = true;
         comboCnt = 0;
-        comboTimeout = 0.3f;
         comboDuration = defaultDuration;
     }
 
@@ -69,7 +102,7 @@ public class PlayerController : MonoBehaviour
                 yield break;
             if(timeout > comboTimeout)
             {
-                InitVelocity();
+                BreakCombo();
                 yield break;
             }
             timeout += Time.deltaTime;
@@ -81,15 +114,12 @@ public class PlayerController : MonoBehaviour
     {
         if(leftPressed || !CombeAvailable)
         {
-            InitVelocity();
+            BreakCombo();
             return;
         }
         comboCnt++;
         leftPressed = true;
-
-
-        float velocity = Mathf.Clamp(comboCnt / 50f, 1, int.MaxValue);
-        rigid.AddForce(transform.forward * velocity, ForceMode.Impulse);
+        IncreaseSpeed();
 
         comboDuration *= 0.99f;
         StartCoroutine(WaitCombo());
@@ -99,17 +129,20 @@ public class PlayerController : MonoBehaviour
     {
         if (!leftPressed || !CombeAvailable)
         {
-            InitVelocity();
+            BreakCombo();
             return;
         }
         comboCnt++;
         leftPressed = false;
-
-        float velocity = Mathf.Clamp(comboCnt / 50f, 1, int.MaxValue);
-        rigid.AddForce(transform.forward * velocity, ForceMode.Impulse);
+        IncreaseSpeed();
 
         comboDuration *= 0.99f;
         StartCoroutine(WaitCombo());
+    }
+
+    private void IncreaseSpeed()
+    {
+        speed = Mathf.Clamp(speed + increseSpeedPerCombo, 3f, float.MaxValue);
     }
 
     private void OnRotate(InputAction.CallbackContext context)
@@ -118,10 +151,5 @@ public class PlayerController : MonoBehaviour
         Vector2 mouse = context.ReadValue<Vector2>();
         float mouseX = mouse.x * mouseSensitivity * Time.deltaTime;
         transform.Rotate(0, mouseX, 0);
-    }
-
-    void Update()
-    {
-        
     }
 }
