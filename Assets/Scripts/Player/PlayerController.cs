@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField]
     private PlayerInput playerInput;
+
+    [SerializeField] private PlayerUI playerUI;
     private CharacterController cc;
     private HopakAnimation hopakAnim;
 
@@ -35,7 +37,7 @@ public class PlayerController : MonoBehaviour
     private float speed;
 
     [SerializeField]
-    [Header("deceleration smooth curve")]
+    [Header("Deceleration smooth curve")]
     private AnimationCurve decelerationCurve;
 
     [SerializeField]
@@ -89,9 +91,9 @@ public class PlayerController : MonoBehaviour
             else
             {
                 decelerationTime += Time.deltaTime;
-
                 float t = Mathf.Clamp01(decelerationTime / stopDuration);
                 speed *= decelerationCurve.Evaluate(t);
+                playerUI.SetSpeed(speed);
 
                 if (t >= 1f)
                 {
@@ -110,6 +112,7 @@ public class PlayerController : MonoBehaviour
         isDecelerating = true;
         comboCnt = 0;
         comboDuration = defaultDuration;
+        playerUI.ComboBreak();
     }
 
     private IEnumerator WaitCombo()
@@ -141,6 +144,7 @@ public class PlayerController : MonoBehaviour
     private void IncreaseSpeed()
     {
         speed = Mathf.Clamp(speed + increseSpeedPerCombo, 3f, float.MaxValue);
+        playerUI.SetSpeed(speed);
     }
 
     #region Input
@@ -170,6 +174,7 @@ public class PlayerController : MonoBehaviour
     private void InCreaseCombo(bool left)
     {
         comboCnt++;
+        playerUI.ComboUpdate(comboDuration, comboCnt, comboTimeout);
         leftPressed = left;
         IncreaseSpeed();
         hopakAnim.PlayAnimation(leftPressed, comboDuration);
