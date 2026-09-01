@@ -1,18 +1,31 @@
 using UnityEngine;
 
 [System.Serializable]
+
 public class MutationData
 {
-    public string skillName;
-    public string skillDescription;
-    public string skillCooldown;
-    public string skillCost;
+    public string MutationName;
+    public string MutationDescription;
+    public string MutationCooldown;
+    public string MutationCost;
 }
 
+[System.Serializable]
+
+public class RareMutationData
+{
+    public string RareMutationName;
+    public string RareMutationDescription;
+    public string RareMutationCooldown;
+    public string RareMutationCost;
+}
 
 public class MutationInfo : MonoBehaviour
 {
     public MutationData[] MutationData;
+    public RareMutationData[] RareMutationData;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

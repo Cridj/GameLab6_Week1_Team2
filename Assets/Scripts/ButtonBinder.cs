@@ -9,7 +9,7 @@ public class ButtonBinder : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        button.onClick.AddListener(() => unlockDash?.Invoke());
     }
 
     // Update is called once per frame
