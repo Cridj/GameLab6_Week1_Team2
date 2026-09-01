@@ -85,7 +85,7 @@ GameObject:
   - component: {fileID: 4502507720574819519}
   - component: {fileID: 5052921431331708327}
   m_Layer: 0
-  m_Name: Police
+  m_Name: Police_EnemyBranch
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

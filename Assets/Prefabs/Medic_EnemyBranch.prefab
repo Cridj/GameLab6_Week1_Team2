@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: -8712742917193171150}
   - component: {fileID: 7185416974808840740}
   m_Layer: 10
-  m_Name: Medic
+  m_Name: Medic_EnemyBranch
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
