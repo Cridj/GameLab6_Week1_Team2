@@ -136,7 +136,7 @@ public class GameScene : MonoBehaviour
         IngamePanel.SetActive(false);
 
 
-        if(GameInstance.Instance.curStageLevel ==4) // 게임 클리어
+        if(GameInstance.Instance.curStageLevel == 4) // 게임 클리어
         {
             health.GameEnd();
             finishPanel.gameObject.SetActive(true);

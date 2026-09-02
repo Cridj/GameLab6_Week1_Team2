@@ -46,7 +46,7 @@ public class RewardPanel : MonoBehaviour
 
     public int GetDNAReward()
     {
-        return Mathf.FloorToInt((followerManager.FollowerCnt + playerController.maxSpeed) * 1.05f);
+        return Mathf.FloorToInt((followerManager.FollowerCnt + playerController.maxSpeed) * 1.5f);
     }
 
     private IEnumerator OnReward()
@@ -71,7 +71,7 @@ public class RewardPanel : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
 
         infectionRatioCanvasGroup.alpha = 1f;
-        StartCoroutine(Count(1.05f, 0, infectionRatioReward, true));
+        StartCoroutine(Count(1.5f, 0, infectionRatioReward, true));
 
         yield return new WaitForSeconds(waitTime);
 
@@ -80,7 +80,7 @@ public class RewardPanel : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
 
         finalRewardCanvasGroup.alpha = 1f;
-        float total = (followerManager.FollowerCnt + playerController.maxSpeed) * 1.05f;
+        float total = (followerManager.FollowerCnt + playerController.maxSpeed) * 1.5f;
 
         StartCoroutine(Count(Mathf.FloorToInt(total), 0, finalReward));
     }

@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8530813150846838612}
   - component: {fileID: 3595848729861238805}
-  - component: {fileID: 3109867541020570747}
   - component: {fileID: 5208488774433713781}
   - component: {fileID: 4052057138178480303}
   - component: {fileID: 1176399119125718077}
@@ -43,28 +42,6 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2903296397061463848}
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!64 &3109867541020570747
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2903296397061463848}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &5208488774433713781
 MeshRenderer:
@@ -146,3 +123,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chunk: {x: 0, y: 0}
   index: {x: 0, y: 0}
+  spawnPitPerPlane: 100
+  pitPrefab: {fileID: 2505708241966610194, guid: 9ab2e25a6a72a6a40bc2ed518006aaa3, type: 3}

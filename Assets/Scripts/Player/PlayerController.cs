@@ -351,6 +351,8 @@ public class PlayerController : MonoBehaviour
     private bool isJumping = false;
     private void OnJump(CallbackContext context)
     {
+        if (!GameInstance.Instance.commonAbilities.ContainsKey(CommonAbilityType.Jump))
+            return;
         if (isFinish)
             return;
         if (isJumping)

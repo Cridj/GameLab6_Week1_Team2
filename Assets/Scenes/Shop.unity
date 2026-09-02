@@ -1658,13 +1658,13 @@ MonoBehaviour:
       \uB3D9\uC548\uC740 \uBB34\uC801\uC774\uBA70 \uACBD\uCC30\uC744 \uAC10\uC5FC\uC2DC\uD0AC
       \uC218 \uC788\uC2B5\uB2C8\uB2E4."
     MutationCooldown: 8
-    MutationCost: 500
+    MutationCost: 100
   - type: 3
     MutationName: "\uBC14\uC774\uB7EC\uC2A4 \uD68C\uBCF5"
     MutationDescription: "\uCCB4\uB825\uC744 1\uCE78 \uD68D\uB4DD\uD569\uB2C8\uB2E4.\\n\uCD5C\uB300
       \uCCB4\uB825 \uC81C\uD55C\uC740 \uC5C6\uC2B5\uB2C8\uB2E4."
     MutationCooldown: 
-    MutationCost: 500
+    MutationCost: 100
   - type: 4
     MutationName: "\uD638\uD30D \uC8FC\uB2C8\uC5B4"
     MutationDescription: "\uAC10\uC5FC\uC744 \uD568\uAED8\uD558\uB294 \uB3D9\uB8CC
@@ -1674,32 +1674,32 @@ MonoBehaviour:
       \uC8FC\uB2C8\uC5B4\uB3C4 \uC0DD\uC131 \uAC00\uB2A5\uD558\uC9C0\uB9CC \uD53C\uACA9
       \uC2DC \uBAA8\uB4E0 \uD638\uD30D \uC8FC\uB2C8\uC5B4\uAC00 \uC0AC\uB77C\uC9D1\uB2C8\uB2E4."
     MutationCooldown: 
-    MutationCost: 500
+    MutationCost: 100
   - type: 5
     MutationName: "\uAC70\uB300\uD654"
     MutationDescription: "\uD50C\uB808\uC774\uC5B4\uC758 \uD06C\uAE30\uAC00 30% \uCEE4\uC9D1\uB2C8\uB2E4.\\n\uD638\uD30D
       \uC8FC\uB2C8\uC5B4\uC5D0\uAC8C\uB3C4 \uD6A8\uACFC\uAC00 \uC801\uC6A9\uB429\uB2C8\uB2E4."
     MutationCooldown: 
-    MutationCost: 500
+    MutationCost: 100
   - type: 6
     MutationName: "\uC5ED\uC131\uC7A5"
     MutationDescription: "\uD50C\uB808\uC774\uC5B4\uC758 \uD06C\uAE30\uAC00 30% \uC791\uC544\uC9D1\uB2C8\uB2E4.\\n\uD638\uD30D
       \uC8FC\uB2C8\uC5B4\uC5D0\uAC8C\uB3C4 \uD6A8\uACFC\uAC00 \uC801\uC6A9\uB429\uB2C8\uB2E4."
     MutationCooldown: 
-    MutationCost: 500
+    MutationCost: 100
   - type: 1
     MutationName: "\uD3F4\uC9DD \uD574\uAE08"
     MutationDescription: "(\uC2A4\uD398\uC774\uC2A4 \uBC14 \uC0AC\uC6A9)\\n\uC18D\uB3C4\uB97C
       \uC720\uC9C0\uD558\uBA70 \uC55E\uC73C\uB85C \uB3C4\uC57D\uD569\uB2C8\uB2E4."
     MutationCooldown: 8
-    MutationCost: 500
+    MutationCost: 100
   UnlockMutationData:
   - type: 0
     MutationName: "\uB354 \uB9CE\uC740 \uB3CC\uC9C4"
     MutationDescription: "\uB3CC\uC9C4\uC758 \uC7AC\uC0AC\uC6A9 \uB300\uAE30\uC2DC\uAC04\uC774
       20% \uAC10\uC18C\uD569\uB2C8\uB2E4."
     MutationCooldown: 
-    MutationCost: 500
+    MutationCost: 400
   RareMutationData:
   - type: 0
     RareMutationName: "\uC708\uB4DC\uBC00"
@@ -1707,7 +1707,7 @@ MonoBehaviour:
       \uC708\uB4DC\uBC00\uC740 \uB3CC\uC9C4\uD558\uB294 \uB3D9\uC548 \uC18D\uB3C4\uAC00
       \uC904\uC5B4\uB4DC\uB294 \uB300\uC2E0 \uD0C0\uACA9 \uBC94\uC704\uAC00 \uB298\uC5B4\uB0A9\uB2C8\uB2E4. "
     RareMutationCooldown: 
-    RareMutationCost: 600
+    RareMutationCost: 400
   - type: 1
     RareMutationName: "\uC2B9\uBD80\uC0AC"
     RareMutationDescription: "\uCCB4\uB825\uC774 \uD55C \uCE78\uC774 \uB429\uB2C8\uB2E4.
@@ -1715,7 +1715,7 @@ MonoBehaviour:
       1\uBD84\uC5D0\uC11C 30\uCD08\uB85C \uC904\uC5B4\uB4E4\uACE0 \uC2A4\uD14C\uC774\uC9C0
       \uD074\uB9AC\uC5B4 \uD68D\uB4DD \uBCF4\uC0C1\uC774 2\uBC30\uAC00 \uB429\uB2C8\uB2E4."
     RareMutationCooldown: 
-    RareMutationCost: 500
+    RareMutationCost: 400
 --- !u!114 &543503411
 MonoBehaviour:
   m_ObjectHideFlags: 0

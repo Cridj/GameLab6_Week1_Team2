@@ -169,11 +169,11 @@ public class ShopManager : MonoBehaviour
                 }
             }
         }
+        if(data.type == CommonAbilityType.Restoration)
+        {
+            GameInstance.Instance.curHeart++;
+        }
 
-        //if (data.MutationName == "'퉤 해금")
-        //    mutationInfo.MutationData.RemoveAt(index);
-        //if (data.MutationName == "폴짝 해금")
-        //    mutationInfo.MutationData.RemoveAt(index);
 
 
         if (!GameInstance.Instance.commonAbilities.ContainsKey(data.type))
