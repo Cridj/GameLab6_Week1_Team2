@@ -22,13 +22,17 @@ public class SpawnManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    void Start()
+    {
+        Init(curStageSpawnData);
+        target = GameObject.FindGameObjectWithTag("Player").transform;
+        InitialSpawn();
+    }
 
     public void Init(StageSpawnData stageSpawnData)
     {
         curStageSpawnData = stageSpawnData;
         timeSinceLastSpawned = 0f;
-        target = GameObject.FindGameObjectWithTag("Player").transform;
-        InitialSpawn();
     }
 
     [ContextMenu("Initial Spawn")]

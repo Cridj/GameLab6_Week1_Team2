@@ -3,12 +3,15 @@ using UnityEngine;
 public class EnemyChase : MonoBehaviour
 {
 
+    [SerializeField] private Animator animator;
     [SerializeField] private float chaseSpeed;
     [SerializeField] private float rotationSpeed;
     [SerializeField] private float detectionRange;
     [SerializeField] private float stopDistance;
 
     private Transform target = null;
+    private bool isMoving = false;
+
 
     void OnEnable()
     {
@@ -28,7 +31,21 @@ public class EnemyChase : MonoBehaviour
             dir = dir.normalized;
             LookAtPlayer(dir);
             if (dist > stopDistance)
+            {
                 transform.position += chaseSpeed * Time.deltaTime * dir;
+                if (!isMoving)
+                {
+                    isMoving = true;
+                    animator.Play("Hopak_Run");
+                }
+            }
+            else if (dist <= stopDistance)
+            {
+                Debug.Log("stop distance");
+                isMoving = false;
+                animator.Play("Default");
+            }
+
         }
     }
 

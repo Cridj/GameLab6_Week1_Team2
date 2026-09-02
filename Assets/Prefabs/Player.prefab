@@ -285,7 +285,7 @@ GameObject:
   - component: {fileID: 8522206801652139876}
   m_Layer: 0
   m_Name: HopakJunior_01
-  m_TagString: Player
+  m_TagString: JuniorHopak
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2314,7 +2314,7 @@ GameObject:
   - component: {fileID: 445943247837165116}
   m_Layer: 0
   m_Name: HopakJunior_04
-  m_TagString: Player
+  m_TagString: JuniorHopak
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5093,7 +5093,7 @@ GameObject:
   - component: {fileID: 4701242714174065651}
   m_Layer: 0
   m_Name: HopakJunior_02
-  m_TagString: Player
+  m_TagString: JuniorHopak
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6942,7 +6942,7 @@ GameObject:
   - component: {fileID: 6934258519213100599}
   m_Layer: 7
   m_Name: Player
-  m_TagString: Player
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -12019,7 +12019,7 @@ GameObject:
   - component: {fileID: 2019760788495942492}
   m_Layer: 0
   m_Name: HopakJunior_03
-  m_TagString: Player
+  m_TagString: JuniorHopak
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
