@@ -44,7 +44,9 @@ public class SpawnManager : MonoBehaviour
             spawnPos += Random.insideUnitSphere * curStageSpawnData.initialSpawnRadius;
             spawnPos.y = 1;
 
-            Instantiate(curStageSpawnData.spawnDataList[0].prefab, spawnPos, Quaternion.identity);
+            GameObject obj = PoolManager.Instance.Get(PoolType.Neutral);
+            obj.transform.position = spawnPos;
+            obj.transform.rotation = Quaternion.identity;
         }
     }
 
@@ -67,11 +69,12 @@ public class SpawnManager : MonoBehaviour
         spawnPos += Random.insideUnitSphere * curStageSpawnData.nearPlayerSpawnRadius;
         spawnPos.y = 1;
 
-        Instantiate(GetSpawnPrefab(), spawnPos, Quaternion.identity);
-
+        GameObject obj = PoolManager.Instance.Get(GetSpawnType());
+        obj.transform.position = spawnPos;
+        obj.transform.rotation = Quaternion.identity;
     }
 
-    GameObject GetSpawnPrefab()
+    PoolType GetSpawnType()
     {
         float cumulative = 0f;
 
@@ -81,11 +84,11 @@ public class SpawnManager : MonoBehaviour
             int randomVal = Random.Range(1, 100);
 
             if (randomVal <= cumulative)
-                return spawnData.prefab;
+                return spawnData.type;
 
         }
 
-        return curStageSpawnData.spawnDataList[0].prefab;
+        return curStageSpawnData.spawnDataList[0].type;
     }
 
 

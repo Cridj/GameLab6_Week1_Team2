@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: TestStageData
   m_EditorClassIdentifier: 
   playerInitialPos: {x: 0, y: 1, z: 0}
-  nearPlayerSpawnRadius: 20
-  initialSpawnRadius: 15
-  initialNeutralAmount: 15
+  initialSpawnRadius: 100
+  initialNeutralAmount: 300
+  spawnDataList:
+  - type: 0
+    weight: 70
+  - type: 1
+    weight: 15
+  - type: 2
+    weight: 15
+  nearPlayerSpawnRadius: 100
+  spawnInterval: 0.1
   maxNeutralAmount: 100
   maxMedicAmount: 10
   maxPoliceAmount: 10
-  spawnDataList:
-  - prefab: {fileID: 6853219938604113496, guid: 7764a4623796db94397ff670e57a9acb, type: 3}
-    weight: 70
-  - prefab: {fileID: 5091173158714399402, guid: 94668e35be305394881ef5c52bf895d5, type: 3}
-    weight: 15
-  - prefab: {fileID: 7977226667062695550, guid: 78a57a196ec18f342aaaab2695c95853, type: 3}
-    weight: 15
-  spawnInterval: 1

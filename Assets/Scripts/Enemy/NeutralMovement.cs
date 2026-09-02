@@ -5,6 +5,7 @@ public class NeutralMovement : MonoBehaviour
 {
     [SerializeField] private float updateInterval = 3f;
     [SerializeField] private float wanderingRadius = 5f;
+    [SerializeField] private Animator animator;
     private NavMeshAgent agent;
     private float timeSinceLastUpdate;
 
@@ -22,8 +23,10 @@ public class NeutralMovement : MonoBehaviour
         {
             Vector3 randomPosition = GetRandomPositionOnNavMesh();
             agent.SetDestination(randomPosition);
+            animator.Play("Hopak_Walk");
             timeSinceLastUpdate = 0f;
         }
+
     }
 
     Vector3 GetRandomPositionOnNavMesh()

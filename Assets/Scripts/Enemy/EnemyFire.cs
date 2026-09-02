@@ -20,11 +20,15 @@ public class EnemyFire : MonoBehaviour
         if (target == null) return;
         if (Time.time - lastfireTime < fireInterval) return;
 
-        float dist = Vector3.Distance(transform.position, target.position);
+        Vector3 curPos2D = transform.position;
+        curPos2D.y = 0;
+        Vector3 targetPos2D = target.position;
+        targetPos2D.y = 0;
+        float dist = Vector3.Distance(curPos2D, targetPos2D);
         if (dist <= fireRanage && projectilePrefab != null)
         {
-            Vector3 dir = (target.position - transform.position).normalized;
-            GameObject projectileInstance = Instantiate(projectilePrefab, transform.position + new Vector3(1, 0, 0), Quaternion.identity);
+            Vector3 dir = (targetPos2D - curPos2D).normalized;
+            GameObject projectileInstance = Instantiate(projectilePrefab, transform.position + new Vector3(0, 0, 1), Quaternion.identity);
             EnemyProjectile projectile = projectileInstance.GetComponent<EnemyProjectile>();
             projectile.rb.linearVelocity = dir * projectileSpeed;
             lastfireTime = Time.time;

@@ -4,16 +4,15 @@ public class Infection : MonoBehaviour
 {
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") || other.CompareTag("JuniorHopak"))
         {
-            Debug.Log("find player");
-            HopackCarrier hopackCarrier = other.GetComponent<HopackCarrier>();
-            if (hopackCarrier != null)
+            if (other.TryGetComponent(out HopackCarrier hopackCarrier))
             {
                 hopackCarrier.followerManager.MakeFollower();
-                Destroy(gameObject);
-            }
+                PoolType type = PoolManager.Instance.GetPoolType(gameObject);
+                PoolManager.Instance.Return(type, gameObject);
 
+            }
         }
     }
 

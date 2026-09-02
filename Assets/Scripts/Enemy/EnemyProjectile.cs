@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class EnemyProjectile : MonoBehaviour
 {
+    [SerializeField] int damage = 1;
     public Rigidbody rb;
     void Awake()
     {
@@ -11,8 +12,10 @@ public class EnemyProjectile : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Projectile hit player");
-            //TakeDamage
+            if (other.TryGetComponent(out PlayerHealth playerHealth))
+            {
+                playerHealth.TakeDamage(damage);
+            }
             Destroy(gameObject);
         }
 

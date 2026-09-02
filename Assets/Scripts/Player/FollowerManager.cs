@@ -47,8 +47,11 @@ public class FollowerManager : MonoBehaviour
         GameObject follower;
         if (followers.Count == 0)
         {
-            Vector3 spawnPos = transform.position - transform.forward * 1.5f;
-            follower = Instantiate(followerPrefab, spawnPos, Quaternion.identity);
+            Vector3 spawnPos = positionHistory[0] - transform.forward * 1.5f;
+            spawnPos.y += 2;
+            follower = PoolManager.Instance.Get(PoolType.Infected);
+            follower.transform.position = spawnPos;
+            follower.transform.rotation = Quaternion.identity;
             followers.Add(follower);
 
             followersCnt++;
@@ -56,7 +59,9 @@ public class FollowerManager : MonoBehaviour
         else if (followers.Count < maxFollowerPerLine)
         {
             Vector3 spawnPos = followers[followers.Count - 1].transform.position - transform.forward * 1.5f;
-            follower = Instantiate(followerPrefab, spawnPos, Quaternion.identity);
+            follower = PoolManager.Instance.Get(PoolType.Infected);
+            follower.transform.position = spawnPos;
+            follower.transform.rotation = Quaternion.identity;
             followers.Add(follower);
 
             followersCnt++;
@@ -67,7 +72,8 @@ public class FollowerManager : MonoBehaviour
             int x = followersCnt % maxFollowerPerLine;
 
             GameObject targetFollower = followers[x];
-            follower = Instantiate(followerPrefab, targetFollower.transform);
+            follower = PoolManager.Instance.Get(PoolType.Infected);
+            follower.transform.parent = targetFollower.transform;
 
             if (lineNum % 2 == 0)
                 //follower.transform.localPosition += targetFollower.transform.localRotation * Vector3.right * gapBetweenLine * (lineNum / 2);
@@ -76,6 +82,7 @@ public class FollowerManager : MonoBehaviour
             else
                 //follower.transform.localPosition -= targetFollower.transform.right * gapBetweenLine * ((lineNum + 1) / 2);
                 follower.transform.localPosition = new Vector3(-gapBetweenLine * ((lineNum + 1) / 2), 0, 0);
+
 
             followersCnt++;
         }
