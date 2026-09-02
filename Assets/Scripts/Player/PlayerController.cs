@@ -90,17 +90,16 @@ public class PlayerController : MonoBehaviour
     private int sprintLevel;
     private int jumpLevel;
     private int spitLevel;
+    private bool isStarted = false;
 
 
     void Start()
     {
         Cursor.visible = false;
-        Init();
-        playerInput.actions["Sprint"].ChangeBinding("<Keyboard>/space");
     }
 
 
-    void Init()
+    public void Init()
     {
         //Component initialization
         cc = GetComponent<CharacterController>();
@@ -119,7 +118,7 @@ public class PlayerController : MonoBehaviour
 
         //ability initialization
         {
-            if (playerAbility.commonAbilities.TryGetValue(CommonAbilityType.Growing, out int value)) // 거대화
+            if (GameInstance.Instance.commonAbilities.TryGetValue(CommonAbilityType.Growing, out int value)) // 거대화
             {
                 foreach (var hopak in hopakJuniors)
                 {
@@ -127,7 +126,7 @@ public class PlayerController : MonoBehaviour
                 }
                 hopakPlayer.transform.localScale *= 1.3f;
             }
-            foreach (var ability in playerAbility.commonAbilities)
+            foreach (var ability in GameInstance.Instance.commonAbilities)
             {
                 switch (ability.Key)
                 {
@@ -150,10 +149,13 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+        isStarted = true;
     }
 
     void Update()
     {
+        if (!isStarted)
+            return;
         Decelerating();
         transform.Rotate(0, curRotateInput * rotSpeed, 0);
 
@@ -232,7 +234,7 @@ public class PlayerController : MonoBehaviour
         isSprint = true;
         trail.enabled = true;
         speedModifier = 1.5f;
-        if (playerAbility.hiddenAbilities.TryGetValue(HiddenAbilityType.Windmill, out var value))
+        if (GameInstance.Instance.hiddenAbilities.TryGetValue(HiddenAbilityType.Windmill, out var value))
         {
             Debug.Log("Windmill!");
             hopakAnim.PlayWindmill(duration);

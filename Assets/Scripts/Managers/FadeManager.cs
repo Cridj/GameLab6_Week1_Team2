@@ -24,6 +24,15 @@ public class FadeManager : MonoBehaviour
     [ContextMenu("FadeIn")]
     public void FadeIn()
     {
+        if (fadeImage == null)
+        {
+            Canvas canvas = FindObjectsByType<Canvas>(FindObjectsSortMode.None)[0];
+            if (canvas == null)
+                canvas = new GameObject().AddComponent<Canvas>();
+            fadeImage = Instantiate(fadeImagePrefab, canvas.transform).GetComponent<Image>();
+        }
+
+
         fadeImage.gameObject.SetActive(true);
         fadeImage.color = new Color(0, 0, 0, 1);
         fadeImage.DOColor(new Color(0, 0, 0, 0), 1.5f);
@@ -32,6 +41,13 @@ public class FadeManager : MonoBehaviour
     [ContextMenu("FadeOut")]
     public void FadeOut(Action callback)
     {
+        if (fadeImage == null)
+        {
+            Canvas canvas = FindObjectsByType<Canvas>(FindObjectsSortMode.None)[0];
+            if (canvas == null)
+                canvas = new GameObject().AddComponent<Canvas>();
+            fadeImage = Instantiate(fadeImagePrefab, canvas.transform).GetComponent<Image>();
+        }
         fadeImage.gameObject.SetActive(true);
         fadeImage.color = new Color(0, 0, 0, 0);
         fadeImage.DOColor(new Color(0, 0, 0, 1), 1.5f);

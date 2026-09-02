@@ -7,7 +7,13 @@ public class MainLobby : MonoBehaviour
     {
         Managers.Instance.Fade.FadeOut(() =>
         {
-            SceneManager.LoadSceneAsync("PlayerTest");
+            Managers.Instance.Sound.StopBgm();
+            SceneManager.LoadSceneAsync("GameScene");
         });
+    }
+
+    private void Start()
+    {
+        Managers.Instance.Sound.PlayBgm("로비소리_느린버전");
     }
 }

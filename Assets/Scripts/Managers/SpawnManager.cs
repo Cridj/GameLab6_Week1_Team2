@@ -22,17 +22,13 @@ public class SpawnManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    void Start()
-    {
-        Init(curStageSpawnData);
-        target = GameObject.FindGameObjectWithTag("Player").transform;
-        InitialSpawn();
-    }
 
-    void Init(StageSpawnData stageSpawnData)
+    public void Init(StageSpawnData stageSpawnData)
     {
         curStageSpawnData = stageSpawnData;
         timeSinceLastSpawned = 0f;
+        target = GameObject.FindGameObjectWithTag("Player").transform;
+        InitialSpawn();
     }
 
     [ContextMenu("Initial Spawn")]
@@ -68,7 +64,6 @@ public class SpawnManager : MonoBehaviour
         spawnPos.y = 1;
 
         Instantiate(GetSpawnPrefab(), spawnPos, Quaternion.identity);
-
     }
 
     GameObject GetSpawnPrefab()
@@ -87,6 +82,4 @@ public class SpawnManager : MonoBehaviour
 
         return curStageSpawnData.spawnDataList[0].prefab;
     }
-
-
 }

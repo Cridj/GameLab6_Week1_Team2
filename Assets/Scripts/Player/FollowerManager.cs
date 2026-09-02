@@ -22,7 +22,7 @@ public class FollowerManager : MonoBehaviour
     {
         // 일정 거리마다 position 기록
         float dist = Vector3.Distance(transform.position, positionHistory[0]);
-        if (dist >= 1.5f)
+        if (dist >= 0.8f)
         {
             positionHistory.Insert(0, transform.position);
         }
@@ -35,7 +35,7 @@ public class FollowerManager : MonoBehaviour
                 Vector3 point = positionHistory[Mathf.Min(index * Gap, positionHistory.Count - 1)];
                 point.y = 1;
                 Vector3 moveDirection = point - follower.transform.position;
-                follower.transform.position += moveDirection * 10f * Time.deltaTime;
+                follower.transform.position += moveDirection * 30f * Time.deltaTime;
                 follower.transform.LookAt(point);
                 index++;
             }
@@ -47,7 +47,7 @@ public class FollowerManager : MonoBehaviour
         GameObject follower;
         if (followers.Count == 0)
         {
-            Vector3 spawnPos = transform.position - transform.forward * 1.5f;
+            Vector3 spawnPos = transform.position - transform.forward * 0.2f;
             follower = Instantiate(followerPrefab, spawnPos, Quaternion.identity);
             followers.Add(follower);
 
@@ -81,7 +81,6 @@ public class FollowerManager : MonoBehaviour
         }
 
         follower.GetComponentInChildren<Animator>().Play("Hopak");
-
     }
 
     public void TriggerByJunior()

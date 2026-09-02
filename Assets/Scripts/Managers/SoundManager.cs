@@ -36,4 +36,9 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    public void StopBgm()
+    {
+        bgmSource.Stop();
+    }
+
 }
