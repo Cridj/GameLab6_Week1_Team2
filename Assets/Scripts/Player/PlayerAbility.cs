@@ -27,7 +27,7 @@ public class PlayerAbility : MonoBehaviour
         // Initialize common abilities 임시
         commonAbilities.Add(CommonAbilityType.Growing, 1);
         commonAbilities.Add(CommonAbilityType.Sprint, 1);
-        commonAbilities.Add(CommonAbilityType.HopakJunior, 4);
+        commonAbilities.Add(CommonAbilityType.HopakJunior, 2);
         commonAbilities.Add(CommonAbilityType.Jump, 1);
         //commonAbilities.Add(CommonAbilityType.Snip, 1);
 
@@ -35,6 +35,4 @@ public class PlayerAbility : MonoBehaviour
         // Initialize hidden abilities 임시
         //hiddenAbilities.Add(HiddenAbilityType.Windmill, 1);
     }
-
-
 }

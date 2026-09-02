@@ -96,6 +96,7 @@ public class PlayerController : MonoBehaviour
     {
         Cursor.visible = false;
         Init();
+        playerInput.actions["Sprint"].ChangeBinding("<Keyboard>/space");
     }
 
 
@@ -219,7 +220,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
     private void IncreaseSpeed()
     {
         speed = Mathf.Clamp(speed + increseSpeedPerCombo, 3f, float.MaxValue);
@@ -278,6 +278,7 @@ public class PlayerController : MonoBehaviour
 
     private void InCreaseCombo(bool left)
     {
+ 
         comboCnt++;
         playerUI.ComboUpdate(comboDuration, comboCnt, comboTimeout);
         leftPressed = left;

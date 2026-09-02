@@ -1,38 +1,15 @@
+using DG.Tweening;
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class FadeManager : MonoBehaviour
 {
-    private static FadeManager instance = null;
     [SerializeField] private Image fadeImage;
     [SerializeField] private GameObject fadeImagePrefab;
 
-    public static FadeManager Instance
-    {
-        get
-        {
-            if (instance == null)
-            {
-                instance = FindObjectsByType<FadeManager>(FindObjectsSortMode.None)[0];
-            }
-            return instance;
-        }
-    }
-
-    void Awake()
-    {
-        if (null == instance)
-        {
-            instance = this;
-            DontDestroyOnLoad(this.gameObject);
-        }
-        else
-        {
-            Destroy(this.gameObject);
-        }
-    }
-
-    private void Start()
+    public void Init()
     {
         if(fadeImage == null)
         {
@@ -49,14 +26,21 @@ public class FadeManager : MonoBehaviour
     {
         fadeImage.gameObject.SetActive(true);
         fadeImage.color = new Color(0, 0, 0, 1);
-        fadeImage.CrossFadeAlpha(0, 1.5f, false);
+        fadeImage.DOColor(new Color(0, 0, 0, 0), 1.5f);
     }
 
     [ContextMenu("FadeOut")]
-    public void FadeOut()
+    public void FadeOut(Action callback)
     {
         fadeImage.gameObject.SetActive(true);
         fadeImage.color = new Color(0, 0, 0, 0);
-        fadeImage.CrossFadeAlpha(1, 1.5f, false);
+        fadeImage.DOColor(new Color(0, 0, 0, 1), 1.5f);
+        StartCoroutine(CallbackReceiver(callback));
+    }
+
+    IEnumerator CallbackReceiver(Action callback)
+    {
+        yield return new WaitForSeconds(1.5f);
+        callback?.Invoke();
     }
 }
