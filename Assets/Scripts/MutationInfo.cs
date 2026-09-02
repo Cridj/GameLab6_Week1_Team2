@@ -4,6 +4,7 @@ using UnityEngine;
 [System.Serializable]
 public class MutationData
 {
+    public CommonAbilityType type;
     public string MutationName;
     public string MutationDescription;
     public string MutationCooldown;
@@ -13,6 +14,7 @@ public class MutationData
 [System.Serializable]
 public class RareMutationData
 {
+    public HiddenAbilityType type;
     public string RareMutationName;
     public string RareMutationDescription;
     public string RareMutationCooldown;
@@ -23,6 +25,7 @@ public class MutationInfo : MonoBehaviour
 {
     public List<MutationData> MutationData;
     public List<MutationData> UnlockMutationData;
+
 
     public List<RareMutationData> RareMutationData;
 

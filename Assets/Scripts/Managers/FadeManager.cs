@@ -17,6 +17,7 @@ public class FadeManager : MonoBehaviour
             if (canvas == null)
                 canvas = new GameObject().AddComponent<Canvas>();
             fadeImage = Instantiate(fadeImagePrefab, canvas.transform).GetComponent<Image>();
+            fadeImage.transform.SetAsLastSibling();
         }
         FadeIn();
     }
@@ -30,6 +31,7 @@ public class FadeManager : MonoBehaviour
             if (canvas == null)
                 canvas = new GameObject().AddComponent<Canvas>();
             fadeImage = Instantiate(fadeImagePrefab, canvas.transform).GetComponent<Image>();
+            fadeImage.transform.SetAsLastSibling();
         }
 
 
@@ -47,6 +49,7 @@ public class FadeManager : MonoBehaviour
             if (canvas == null)
                 canvas = new GameObject().AddComponent<Canvas>();
             fadeImage = Instantiate(fadeImagePrefab, canvas.transform).GetComponent<Image>();
+            fadeImage.transform.SetAsLastSibling();
         }
         fadeImage.gameObject.SetActive(true);
         fadeImage.color = new Color(0, 0, 0, 0);

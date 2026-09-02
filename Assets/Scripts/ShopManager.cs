@@ -1,19 +1,14 @@
+using AYellowpaper.SerializedCollections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using static UnityEngine.Analytics.IAnalytic;
-using static UnityEngine.Rendering.DebugUI;
+using UnityEngine.SceneManagement;
 
 public class ShopManager : MonoBehaviour
 {
-    public Dictionary<string, int> mutationCnt = new();
-
-    private string mutationName;
-    private string mutationDescription;
-    private string mutationCooldown;
-    private string mutationCost;
+    public SerializedDictionary<string, int> mutationCnt = new();
 
     private int reRollCost = 100;
 
@@ -32,35 +27,40 @@ public class ShopManager : MonoBehaviour
         set 
         { 
             dnaAmount = value;
+            GameInstance.Instance.curDNA = value;
             dnaAmountText.text = dnaAmount.ToString();
         }
     }
 
     private void OnEnable()
     {
-        distributionMutation();
-        distributionRareMutation();
-        //dnaAmount.text = GameInstance.Instance.curDNA.ToString();
-
-        DnaAmount = 5000;
+        Managers.Instance.Fade.FadeIn();
+        UpdateCommonMutation();
+        UpdateRareMutation();
+        UpdateDNA();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-
+        Cursor.visible = true;
     }
 
-
-    //보유 변이 유전자 업데이트
-    private void updateDNA()
+    private void UpdateDNA()
     {
-
+        DnaAmount = GameInstance.Instance.curDNA;
     }
 
+    public void NextStage()
+    {
+        Managers.Instance.Fade.FadeOut(() =>
+        {
+            GameInstance.Instance.curStageLevel++;
+            SceneManager.LoadSceneAsync("GameScene");
+        });
+    }
 
-    [ContextMenu("distributionMutationTest")]
-    private void distributionMutation()
+    [ContextMenu("UpdateCommonMutation")]
+    private void UpdateCommonMutation()
     {
         
         foreach(var card in commonCard) // 리롤용 재생성
@@ -69,7 +69,7 @@ public class ShopManager : MonoBehaviour
         }
         List<MutationData> indexList = mutationInfo.MutationData.ToList();
 
-        int count = 3; // 무작위로 몇 개 뽑을 것인지 정함
+        int count = 3; // 3개 뽑기
 
         for (int i = 0; i < count; i++)
         {
@@ -83,63 +83,81 @@ public class ShopManager : MonoBehaviour
             var card = commonCard[i];
             commonCard[i].buyButton.onClick.AddListener(() =>
             {
-                purchaseMutation(data);
-                card.gameObject.SetActive(false);  
+                if(data.MutationCost <= GameInstance.Instance.curDNA)
+                {
+                    PurchaseMutation(data);
+                    card.gameObject.SetActive(false);
+                }
             });
-
-            //if(data.MutationName == "돌진 해금")
-            //{
-            //    for(int j = 0; j < mutationInfo.UnlockMutationData.Count; j++)
-            //    {
-            //        if (mutationInfo.UnlockMutationData[j].MutationName == "더 많은 돌진")
-            //        {
-            //            mutationInfo.MutationData.Add(mutationInfo.UnlockMutationData[j]);
-            //            mutationInfo.UnlockMutationData.RemoveAt(j);
-            //        }
-            //    }
-            //}
-            // ~ list[index] 사용해서 하고 싶은 일 하기 ~
             indexList.RemoveAt(index); // 인덱스를 없애서 중복 없이 뽑을 수 있도록 한다
         }
     }
 
-    [ContextMenu("distributionRareMutationTest")]
+    [ContextMenu("UpdateRareMutation")]
 
-    private void distributionRareMutation()
+    private void UpdateRareMutation()
     {
         List<RareMutationData> indexList = mutationInfo.RareMutationData;
 
         int index = UnityEngine.Random.Range(0, indexList.Count);
-        rareCard.cardName.text = indexList[index].RareMutationName;
-        rareCard.cardDescription.text = indexList[index].RareMutationDescription;
-        rareCard.cardCost.text = indexList[index].RareMutationCost.ToString();
+        var data = indexList[index];
+        rareCard.cardName.text = data.RareMutationName;
+        rareCard.cardDescription.text = data.RareMutationDescription;
+        rareCard.cardCost.text = data.RareMutationCost.ToString();
 
-        int cardCostInt = indexList[index].RareMutationCost;
+        int cardCostInt = data.RareMutationCost;
 
         rareCard.buyButton.onClick.AddListener(() =>
         {
-            purchaseRareMutation(indexList[index]);
-            rareCard.gameObject.SetActive(false);
+            if (data.RareMutationCost <= GameInstance.Instance.curDNA)
+            {
+                PurchaseRareMutation(data);
+                rareCard.gameObject.SetActive(false);
+            }
         });
     }
 
 
     //유전자 변이 점수 차감(결제, 리롤 시)
-    private void dnaDecrease(int cost = 1)
+    private void DnaDecrease(int cost = 1)
     {
         DnaAmount -= cost;
     }
 
 
 
-    public void purchaseMutation(MutationData data)
+    public void PurchaseRareMutation(RareMutationData data)
     {
-        if (data.MutationCost > DnaAmount)
+        if (data.RareMutationCost > GameInstance.Instance.curDNA)
         {
             return;
         }
 
 
+        //if (data.MutationName == "'퉤 해금")
+        //    mutationInfo.MutationData.RemoveAt(index);
+        //if (data.MutationName == "폴짝 해금")
+        //    mutationInfo.MutationData.RemoveAt(index);
+
+
+        if (!GameInstance.Instance.hiddenAbilities.ContainsKey(data.type))
+        {
+            GameInstance.Instance.hiddenAbilities[data.type] = 1;
+        }
+        else
+        {
+            GameInstance.Instance.hiddenAbilities[data.type]++;
+        }
+
+        DnaDecrease(data.RareMutationCost);
+    }
+
+    public void PurchaseMutation(MutationData data)
+    {
+        if (data.MutationCost > GameInstance.Instance.curDNA)
+        {
+            return;
+        }
         if (data.MutationName == "돌진 해금")
         {
             for (int j = 0; j < mutationInfo.UnlockMutationData.Count; j++)
@@ -156,53 +174,32 @@ public class ShopManager : MonoBehaviour
         //    mutationInfo.MutationData.RemoveAt(index);
         //if (data.MutationName == "폴짝 해금")
         //    mutationInfo.MutationData.RemoveAt(index);
-  
 
-        if (!mutationCnt.ContainsKey(data.MutationName))
+
+        if (!GameInstance.Instance.commonAbilities.ContainsKey(data.type))
         {
-            mutationCnt[data.MutationName] = 1;
+            GameInstance.Instance.commonAbilities[data.type] = 1;
         }
         else
         {
-            mutationCnt[data.MutationName]++;
+            GameInstance.Instance.commonAbilities[data.type]++;
         }
 
-
-        dnaDecrease(data.MutationCost);
+        DnaDecrease(data.MutationCost);
     }
 
 
-    private void purchaseRareMutation(RareMutationData data2)
-    {
-        if (data2.RareMutationCost > DnaAmount)
-        {
-            return;
-        }
 
-        if (!mutationCnt.ContainsKey(data2.RareMutationName))
-        {
-            mutationCnt[data2.RareMutationName] = 1;
-        }
-        else
-        {
-            mutationCnt[data2.RareMutationName]++;
-        }
-
-        //mutationInfo.MutationData.RemoveAt(index);
-        dnaDecrease(data2.RareMutationCost);
-    }
-
-
-    public void reRoll()
+    public void Reroll()
     {
         if (reRollCost > DnaAmount)
         {
             return;
         }
-        distributionMutation();
-        reRollCostText.text = reRollCost.ToString();
-        dnaDecrease(reRollCost);
+        UpdateCommonMutation();
+        DnaDecrease(reRollCost);
         reRollCost *= 2;
+        reRollCostText.text = reRollCost.ToString();
     }
 
 }

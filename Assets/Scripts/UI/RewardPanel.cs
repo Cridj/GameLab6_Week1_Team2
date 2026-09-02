@@ -38,23 +38,15 @@ public class RewardPanel : MonoBehaviour
         StartCoroutine(OnReward());
     }
 
-    [ContextMenu("RewardTest")]
-    public void RewardTest()
-    {
-        mainCanvasGroup.alpha = 0f;
-        infectionCanvasGroup.alpha = 0f;
-        plusCanvanGroup.alpha = 0f;
-        highSpeedCanvasGroup.alpha = 0f;
-        mulCanvanGroup.alpha = 0f;
-        infectionRatioCanvasGroup.alpha = 0f;
-        lineCanvanGroup.alpha = 0f;
-        finalRewardCanvasGroup.alpha = 0f;
-        StartCoroutine(OnReward());
-    }
 
     public void GetRewards()
     {
 
+    }
+
+    public int GetDNAReward()
+    {
+        return Mathf.FloorToInt((followerManager.FollowerCnt + playerController.maxSpeed) * 1.05f);
     }
 
     private IEnumerator OnReward()

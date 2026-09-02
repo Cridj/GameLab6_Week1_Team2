@@ -238,7 +238,7 @@ MonoBehaviour:
   spawnManager: {fileID: 831043683}
   isStarted: 0
   isFinished: 0
-  gameTime: 60
+  gameTime: 2
   timerText: {fileID: 893920435}
 --- !u!4 &692559978 stripped
 Transform:
@@ -406,6 +406,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1353482785543515443, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3231804045921894158, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5829064584560578562, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
       propertyPath: m_Name
       value: Player

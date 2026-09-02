@@ -121,7 +121,7 @@ public class GameScene : MonoBehaviour
                 timerText.text = "";
                 break;
             }
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(1f);
         }
 
         if(isFinished)
@@ -141,7 +141,7 @@ public class GameScene : MonoBehaviour
             health.GameEnd();
             finishPanel.gameObject.SetActive(true);
 
-            yield return new WaitForSeconds(6f);
+            yield return new WaitForSeconds(8f);
             while (true)
             {
                 if (Input.GetKeyDown(KeyCode.Space))
@@ -156,13 +156,18 @@ public class GameScene : MonoBehaviour
         {
             health.GameEnd();
             rewardPanel.gameObject.SetActive(true);
+            GameInstance.Instance.curDNA += rewardPanel.GetDNAReward();
 
-            yield return new WaitForSeconds(6f);
+            yield return new WaitForSeconds(8f);
             while (true)
             {
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     //TODO 상점으로 이동
+                    Managers.Instance.Fade.FadeOut(() =>
+                    {
+                        SceneManager.LoadSceneAsync("Shop");
+                    });
                 }
                 yield return null;
             }
