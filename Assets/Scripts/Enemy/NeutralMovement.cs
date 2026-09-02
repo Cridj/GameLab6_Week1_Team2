@@ -5,6 +5,7 @@ public class NeutralMovement : MonoBehaviour
     [SerializeField] private float updateInterval = 3f;
     [SerializeField] private float wanderingRadius = 5f;
     [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float rotationSpeed = 180f;
     [SerializeField] private Animator animator;
 
     private float timeSinceLastUpdate;
@@ -20,6 +21,15 @@ public class NeutralMovement : MonoBehaviour
     {
 
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * moveSpeed);
+        Vector3 dir = targetPosition - transform.position;
+        dir.y = 0;
+        dir = dir.normalized;
+        if (dir.sqrMagnitude > 0.01f)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+        }
+
         timeSinceLastUpdate += Time.deltaTime;
 
         if (timeSinceLastUpdate >= updateInterval)
