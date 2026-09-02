@@ -78,14 +78,17 @@ public class PlayerController : MonoBehaviour
     private float curRotateInput;
     bool isDecelerating;
     private int bonusHeart;
-    private int sprintLevel;
-    private int jumpLevel;
-    private int spitLevel;
     private Vector3 jumpDir;
     private float speedModifier = 1f;
 
     [SerializeField] private float sprintCooldown = 15f;
     private bool isSprint = false;
+
+    //Ability levels
+    private int sprintLevel;
+    private int jumpLevel;
+    private int spitLevel;
+
 
     void Start()
     {
@@ -109,6 +112,7 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Turn"].canceled += OnTurnEnd;
         playerInput.actions["Jump"].performed += OnJump;
         playerInput.actions["Sprint"].performed += OnSprint;
+
         //ability initialization
         {
             if (playerAbility.commonAbilities.TryGetValue(CommonAbilityType.Growing, out int value)) // 거대화

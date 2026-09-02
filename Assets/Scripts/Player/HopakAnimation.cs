@@ -34,7 +34,7 @@ public class HopakAnimation : MonoBehaviour
             animator.Play("HopakRight");
         }
     }
-
+     
     public void PlayWindmill(float duration)
     {
         StartCoroutine(OnWindmill(duration));
