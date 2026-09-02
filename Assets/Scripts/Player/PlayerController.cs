@@ -285,7 +285,7 @@ public class PlayerController : MonoBehaviour
         IncreaseSpeed();
         hopakAnim.PlayAnimation(leftPressed, comboDuration);
         comboDuration *= comboDurationDecayRate;
-        StartCoroutine(WaitCombo());
+        StartCoroutine(WaitCombo()); 
     }
 
 
