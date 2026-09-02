@@ -58,7 +58,6 @@ public class SpawnManager : MonoBehaviour
             Spawn();
             timeSinceLastSpawned = 0f;
         }
-
     }
 
     void Spawn()
@@ -85,7 +84,6 @@ public class SpawnManager : MonoBehaviour
 
             if (randomVal <= cumulative)
                 return spawnData.type;
-
         }
 
         return curStageSpawnData.spawnDataList[0].type;

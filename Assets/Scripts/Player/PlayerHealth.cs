@@ -17,10 +17,16 @@ public class PlayerHealth : MonoBehaviour
 
     public Action GameOver;
     private bool isDie = false;
+    public bool isGameOver = false;
 
     void OnEnable()
     {
 
+    }
+
+    public void GameEnd()
+    {
+        isGameOver = true;
     }
 
     public void Init(int curHp)
@@ -37,7 +43,7 @@ public class PlayerHealth : MonoBehaviour
     }
     public void TakeDamage(int amount)
     {
-        if (isDie)
+        if (isDie || isGameOver)
         {
             return;
         }

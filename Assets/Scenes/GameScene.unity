@@ -231,15 +231,26 @@ MonoBehaviour:
     - Key: 4
       Value: {fileID: 1124772022}
   IngamePanel: {fileID: 2069551910}
-  DiePanel: {fileID: 0}
+  DiePanel: {fileID: 1633724495}
   rewardPanel: {fileID: 1859201400}
-  finishPanel: {fileID: 0}
+  finishPanel: {fileID: 1617642430}
   pc: {fileID: 1124772021}
   spawnManager: {fileID: 831043683}
   isStarted: 0
   isFinished: 0
   gameTime: 60
   timerText: {fileID: 893920435}
+--- !u!114 &598141135 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3888189777634975293, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
+  m_PrefabInstance: {fileID: 1124772020}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb6ea7806c47cb044a86725a3cedd443, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &692559978 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7645532066590856878, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
@@ -480,6 +491,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8767238854238969553, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
+      propertyPath: followerManager
+      value: 
+      objectReference: {fileID: 598141135}
+    - target: {fileID: 8767238854238969553, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
+      propertyPath: playerController
+      value: 
+      objectReference: {fileID: 1124772021}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -538,6 +557,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1617642430 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 525235405898033231, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
+  m_PrefabInstance: {fileID: 1124772020}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1633724495 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6961299837250679082, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
+  m_PrefabInstance: {fileID: 1124772020}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1727578071
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,4 +16,9 @@ public class MainLobby : MonoBehaviour
     {
         Managers.Instance.Sound.PlayBgm("로비소리_느린버전");
     }
+
+    public void Quit()
+    {
+        Application.Quit();
+    }
 }

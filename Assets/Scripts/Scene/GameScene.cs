@@ -12,7 +12,7 @@ public class GameScene : MonoBehaviour
     [SerializeField] private GameObject IngamePanel;
     [SerializeField] private GameObject DiePanel;
     [SerializeField] private RewardPanel rewardPanel;
-    [SerializeField] private RewardPanel finishPanel;
+    [SerializeField] private GameObject finishPanel;
 
     [SerializeField] private PlayerController pc;
     [SerializeField] private SpawnManager spawnManager;
@@ -20,6 +20,9 @@ public class GameScene : MonoBehaviour
     [SerializeField] private bool isFinished = false;
     [SerializeField] private int gameTime = 60;
     private PlayerHealth health;
+
+
+
 
     [SerializeField] private TextMeshProUGUI timerText;
 
@@ -127,6 +130,7 @@ public class GameScene : MonoBehaviour
 
         if(GameInstance.Instance.curStageLevel ==4) // 게임 클리어
         {
+            health.GameEnd();
             finishPanel.gameObject.SetActive(true);
 
             yield return new WaitForSeconds(6f);
@@ -142,6 +146,7 @@ public class GameScene : MonoBehaviour
         }
         else
         {
+            health.GameEnd();
             rewardPanel.gameObject.SetActive(true);
 
             yield return new WaitForSeconds(6f);

@@ -22,6 +22,8 @@ public class RewardPanel : MonoBehaviour
 
 
     [SerializeField] private float waitTime = 0.5f;
+    [SerializeField] private FollowerManager followerManager;
+    [SerializeField] private PlayerController playerController;
 
     private void OnEnable()
     {
@@ -61,7 +63,7 @@ public class RewardPanel : MonoBehaviour
         yield return new WaitForSeconds(waitTime);
 
         infectionCanvasGroup.alpha = 1f;
-        StartCoroutine(Count(500, 0, infectionReward));
+        StartCoroutine(Count(followerManager.FollowerCnt, 0, infectionReward));
 
         yield return new WaitForSeconds(waitTime);
 
@@ -69,7 +71,7 @@ public class RewardPanel : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
 
         highSpeedCanvasGroup.alpha = 1f;
-        StartCoroutine(Count(500, 0, highSpeedReward));
+        StartCoroutine(Count(playerController.maxSpeed, 0, highSpeedReward));
 
         yield return new WaitForSeconds(waitTime);
 
@@ -77,7 +79,7 @@ public class RewardPanel : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
 
         infectionRatioCanvasGroup.alpha = 1f;
-        StartCoroutine(Count(500, 0, infectionRatioReward));
+        StartCoroutine(Count(1.05f, 0, infectionRatioReward, true));
 
         yield return new WaitForSeconds(waitTime);
 
@@ -86,10 +88,12 @@ public class RewardPanel : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
 
         finalRewardCanvasGroup.alpha = 1f;
-        StartCoroutine(Count(2000, 0, finalReward));
+        float total = (followerManager.FollowerCnt + playerController.maxSpeed) * 1.05f;
+
+        StartCoroutine(Count(Mathf.FloorToInt(total), 0, finalReward));
     }
 
-    IEnumerator Count(float target, float current, TextMeshProUGUI text)
+    IEnumerator Count(float target, float current, TextMeshProUGUI text, bool useDecimal = false)
 
     {
 
@@ -105,7 +109,10 @@ public class RewardPanel : MonoBehaviour
 
             current += offset * Time.deltaTime;
 
-            text.text = ((int)current).ToString("F0");
+            if(useDecimal)
+                text.text = current.ToString("F2");
+            else
+                text.text = ((int)current).ToString("F0");
 
             yield return null;
 
@@ -115,7 +122,9 @@ public class RewardPanel : MonoBehaviour
 
         current = target;
 
-        text.text = ((int)current).ToString("F0");
-
+        if (useDecimal)
+            text.text = current.ToString("F2");
+        else
+            text.text = ((int)current).ToString("F0");
     }
 }
