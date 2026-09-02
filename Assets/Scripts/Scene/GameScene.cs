@@ -24,6 +24,7 @@ public class GameScene : MonoBehaviour
 
 
 
+
     [SerializeField] private TextMeshProUGUI timerText;
 
 
@@ -49,7 +50,7 @@ public class GameScene : MonoBehaviour
         pc.enabled = false;
         IngamePanel.SetActive(false);
         DiePanel.SetActive(true);
-
+        isFinished = true;
         StartCoroutine(OnDieCoroutine());
     }
 
@@ -61,6 +62,7 @@ public class GameScene : MonoBehaviour
             {
                 Managers.Instance.Fade.FadeOut(() => 
                 {
+                    pc.GameOver();
                     GameInstance.Instance.InitGame();
                     SceneManager.LoadSceneAsync("MainLobby");
                 });
@@ -122,9 +124,15 @@ public class GameScene : MonoBehaviour
             yield return new WaitForSeconds(1);
         }
 
+        if(isFinished)
+        {
+            yield break;
+        }
+
         isFinished = true;
         spawnManager.enabled = false;
-        pc.enabled = false;
+        pc.GameOver();
+
         IngamePanel.SetActive(false);
 
 

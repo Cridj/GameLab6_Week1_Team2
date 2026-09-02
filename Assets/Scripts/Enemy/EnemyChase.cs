@@ -41,7 +41,6 @@ public class EnemyChase : MonoBehaviour
             }
             else if (dist <= stopDistance)
             {
-                Debug.Log("stop distance");
                 isMoving = false;
                 animator.Play("Default");
             }
@@ -56,7 +55,6 @@ public class EnemyChase : MonoBehaviour
             Quaternion lookRotation = Quaternion.LookRotation(dir);
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
         }
-
     }
 
     void OnDrawGizmos()

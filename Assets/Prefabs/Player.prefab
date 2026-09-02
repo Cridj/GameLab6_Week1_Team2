@@ -1443,6 +1443,7 @@ MonoBehaviour:
   Gap: 1
   maxFollowerPerLine: 50
   gapBetweenLine: 1.5
+  ui: {fileID: 3329228728377527236}
   playerController: {fileID: 6046270870914382381}
 --- !u!136 &4071805200672358894
 CapsuleCollider:
@@ -1502,6 +1503,7 @@ MonoBehaviour:
   - {fileID: 4059221757493701785}
   - {fileID: 8946409282718801250}
   - {fileID: 4433183775665713155}
+  isGameOver: 0
 --- !u!1 &892177748331454075
 GameObject:
   m_ObjectHideFlags: 0
@@ -1517,7 +1519,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8355094642844567295
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3632,6 +3634,7 @@ MonoBehaviour:
   comboText: {fileID: 5058518735267901299}
   speedText: {fileID: 8719266848176058704}
   textPunchScale: 0.4
+  currentInfection: {fileID: 3035840659177395708}
 --- !u!1 &3061659179193956199
 GameObject:
   m_ObjectHideFlags: 0
@@ -6994,6 +6997,7 @@ MonoBehaviour:
   trail: {fileID: 6459389353055978124}
   mouseSensitivity: 15
   speed: 0
+  maxSpeed: 0
   decelerationCurve:
     serializedVersion: 2
     m_Curve:
@@ -10763,9 +10767,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '100
-
-'
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 708388c7070a9444193d1f796b20e946, type: 2}
   m_sharedMaterial: {fileID: -8453385921090175100, guid: 708388c7070a9444193d1f796b20e946, type: 2}
@@ -12779,6 +12781,8 @@ MonoBehaviour:
   lineCanvanGroup: {fileID: 351517420297749388}
   finalRewardCanvasGroup: {fileID: 4576733139427302964}
   waitTime: 1
+  followerManager: {fileID: 3888189777634975293}
+  playerController: {fileID: 6046270870914382381}
 --- !u!1 &9202884169194982251
 GameObject:
   m_ObjectHideFlags: 0

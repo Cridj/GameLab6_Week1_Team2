@@ -93,6 +93,7 @@ public class PlayerController : MonoBehaviour
     private int jumpLevel;
     private int spitLevel;
     private bool isStarted = false;
+    private bool isFinish = false;
 
 
     void Start()
@@ -101,7 +102,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    public void DisableInput()
+    public void GameOver()
     {
         playerInput.actions["Left"].performed -= OnLeft;
         playerInput.actions["Right"].performed -= OnRight;
@@ -110,6 +111,7 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Turn"].canceled -= OnTurnEnd;
         playerInput.actions["Jump"].performed -= OnJump;
         playerInput.actions["Sprint"].performed -= OnSprint;
+        isFinish = true;
     }
 
     public void Init()
@@ -273,6 +275,8 @@ public class PlayerController : MonoBehaviour
 
     private void OnLeft(CallbackContext context)
     {
+        if (isFinish)
+            return;
         if (leftPressed || !comboAvailable)
         {
             BreakCombo();
@@ -284,6 +288,8 @@ public class PlayerController : MonoBehaviour
 
     private void OnRight(CallbackContext context)
     {
+        if (isFinish)
+            return;
         if (!leftPressed || !comboAvailable)
         {
             BreakCombo();
@@ -308,6 +314,8 @@ public class PlayerController : MonoBehaviour
 
     private void OnRotate(CallbackContext context)
     {
+        if (isFinish)
+            return;
         Vector2 mouse = context.ReadValue<Vector2>();
         float mouseX = mouse.x * mouseSensitivity * Time.deltaTime;
         transform.Rotate(0, mouseX, 0);
@@ -316,16 +324,22 @@ public class PlayerController : MonoBehaviour
 
     private void OnTurn(CallbackContext context)
     {
+        if (isFinish)
+            return;
         curRotateInput = context.ReadValue<Vector2>().x;
     }
 
     private void OnTurnEnd(CallbackContext context)
     {
+        if (isFinish)
+            return;
         curRotateInput = 0f;
     }
 
     private void OnSprint(CallbackContext context)
     {
+        if (isFinish)
+            return;
         if (isSprint)
             return;
         if (sprintLevel > 0)
@@ -334,9 +348,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private bool isJumping = false;
     private void OnJump(CallbackContext context)
     {
-        hopakPlayer.transform.DOLocalJump(Vector3.zero, 2.5f, 1, 0.8f);
+        if (isFinish)
+            return;
+        if (isJumping)
+            return;
+        isJumping = true;
+        hopakPlayer.transform.DOLocalJump(Vector3.zero, 2.5f, 1, 0.8f).OnComplete(()=> isJumping = false);
     }
     #endregion
 
