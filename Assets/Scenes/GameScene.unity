@@ -176,6 +176,9 @@ MonoBehaviour:
   - key: 3
     prefab: {fileID: 6853219938604113496, guid: 7ffda9a97a47d4345ae5e6acf674f3e6, type: 3}
     initialSize: 500
+  - key: 4
+    prefab: {fileID: 2149990658594417708, guid: bb531a2d0e2aa614980204503dccff4a, type: 3}
+    initialSize: 100
 --- !u!1 &419544237
 GameObject:
   m_ObjectHideFlags: 0
