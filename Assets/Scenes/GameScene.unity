@@ -238,7 +238,7 @@ MonoBehaviour:
   spawnManager: {fileID: 831043683}
   isStarted: 0
   isFinished: 0
-  gameTime: 2
+  gameTime: 60
   timerText: {fileID: 893920435}
 --- !u!4 &692559978 stripped
 Transform:
