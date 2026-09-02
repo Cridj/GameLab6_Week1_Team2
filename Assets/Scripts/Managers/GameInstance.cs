@@ -8,7 +8,7 @@ public class GameInstance : MonoBehaviour
     public static GameInstance Instance { get; private set; }
     public int curStageLevel = 1;
     public int curDNA = 0;
-    public int curHeart = 0;
+    public int curHeart = 3;
 
     public SerializedDictionary<CommonAbilityType, int> commonAbilities = new SerializedDictionary<CommonAbilityType, int>();
 
@@ -34,5 +34,14 @@ public class GameInstance : MonoBehaviour
             return spawnData;
         }
         return null;
+    }
+
+    public void InitGame()
+    {
+        commonAbilities.Clear();
+        hiddenAbilities.Clear();
+        curStageLevel = 1;
+        curDNA = 0;
+        curHeart = 3;
     }
 }

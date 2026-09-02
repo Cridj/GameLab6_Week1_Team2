@@ -281,7 +281,7 @@ public class PlayerController : MonoBehaviour
 
     private void InCreaseCombo(bool left)
     {
- 
+        Managers.Instance.Sound.PlayComboSound();
         comboCnt++;
         playerUI.ComboUpdate(comboDuration, comboCnt, comboTimeout);
         leftPressed = left;
