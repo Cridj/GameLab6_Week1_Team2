@@ -16,9 +16,9 @@ public class HopakAnimation : MonoBehaviour
         animator.speed = 2.3f - speed * 4f;
         if (left)
         {
-            foreach(var junior in hopakJuniors)
+            foreach (var junior in hopakJuniors)
             {
-                if(junior.gameObject.activeSelf)
+                if (junior.gameObject.activeSelf)
                     junior.Play("HopakLeft");
             }
             animator.Play("HopakLeft");
@@ -34,7 +34,7 @@ public class HopakAnimation : MonoBehaviour
             animator.Play("HopakRight");
         }
     }
-     
+
     public void PlayWindmill(float duration)
     {
         StartCoroutine(OnWindmill(duration));
