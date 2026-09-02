@@ -476,9 +476,6 @@ MonoBehaviour:
   - key: 3
     prefab: {fileID: 6853219938604113496, guid: 7ffda9a97a47d4345ae5e6acf674f3e6, type: 3}
     initialSize: 300
-  - key: 4
-    prefab: {fileID: 2149990658594417708, guid: bb531a2d0e2aa614980204503dccff4a, type: 3}
-    initialSize: 100
 --- !u!1001 &1220288677
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -629,7 +626,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2985402245022537530, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3200201332094291085, guid: 900a16d2ac3cdb740bef2c85fc337706, type: 3}
       propertyPath: m_AnchorMax.y
