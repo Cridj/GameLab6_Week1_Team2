@@ -4,11 +4,6 @@ public class SpawnManager : MonoBehaviour
 {
     public static SpawnManager Instance { get; private set; }
 
-    [Header("Unit")]
-    [SerializeField] GameObject neutralPrefab;
-    [SerializeField] GameObject medicPrefab;
-    [SerializeField] GameObject policePrefab;
-
     public StageSpawnData curStageSpawnData;
 
     private Transform target;

@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class ContactDamage : MonoBehaviour
 {
-    [SerializeField] private float contactInterval = 11f;
-    [SerializeField] private float contactDamage = 5f;
+    [SerializeField] private float contactInterval = 2f;
+    [SerializeField] private float contactDamage = 1f;
     private float lastHitTime = -999f;
 
     void OnTriggerStay(Collider collider)
@@ -19,6 +19,6 @@ public class ContactDamage : MonoBehaviour
 
     void DealtDamage(float amount)
     {
-        Debug.Log("Dealt Contact Damage");
+        Debug.Log("Dealt Contact Damage!!!");
     }
 }

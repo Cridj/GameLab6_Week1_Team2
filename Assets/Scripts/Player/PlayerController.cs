@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Threading;
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -18,11 +18,11 @@ public class PlayerController : MonoBehaviour
 
 
     [SerializeField] private float comboDuration = defaultDuration;
-    
+
     private bool leftPressed = false;
 
     [SerializeField]
-    [Header("Combo timeout until the next combo")] 
+    [Header("Combo timeout until the next combo")]
     private float comboTimeout = 0.3f;
     [SerializeField]
     private const float defaultDuration = 0.4f;
@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
     private AnimationCurve decelerationCurve;
 
     [SerializeField]
-    [Header("Duration time to stop")]    
+    [Header("Duration time to stop")]
     float stopDuration = 1f;
 
     [SerializeField] float decelerationTime;
@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     [Header("Rotate speed with use keyboard arrows")]
-    [Range(0.1f, 2f)] 
+    [Range(0.1f, 2f)]
     private float rotSpeed = 1f;
 
     [SerializeField]
@@ -69,6 +69,7 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Rotate"].performed += OnRotate;
         playerInput.actions["Turn"].performed += OnTurn;
         playerInput.actions["Turn"].canceled += OnTurnEnd;
+
     }
 
     void Update()
@@ -127,7 +128,7 @@ public class PlayerController : MonoBehaviour
         {
             if (prevComboCnt < comboCnt)
                 yield break;
-            if(timeout > comboTimeout)
+            if (timeout > comboTimeout)
             {
                 BreakCombo();
                 yield break;
@@ -147,7 +148,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnLeft(CallbackContext context)
     {
-        if(leftPressed || !comboAvailable)
+        if (leftPressed || !comboAvailable)
         {
             BreakCombo();
             return;

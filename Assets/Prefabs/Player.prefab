@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5261951823737759120}
   - component: {fileID: 3808007502108090726}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Hopak
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -69,7 +69,7 @@ GameObject:
   - component: {fileID: 829499017240985352}
   - component: {fileID: 8700025740338975430}
   - component: {fileID: 8210557783817811076}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: RightThigh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -177,7 +177,7 @@ GameObject:
   - component: {fileID: 2328241889863349099}
   - component: {fileID: 1620422078145732988}
   - component: {fileID: 3322994947763617423}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: LeftLeg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -283,7 +283,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5167889513515435514}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: LeftThighPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -316,7 +316,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4122609532511279711}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: HopakPlayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -351,7 +351,7 @@ GameObject:
   - component: {fileID: 482958060788198773}
   - component: {fileID: 8946409282718801250}
   - component: {fileID: 4027180103448802299}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: RightFoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -456,7 +456,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6481233873542404912}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: RightLegPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -583,7 +583,7 @@ GameObject:
   - component: {fileID: 2657454771713731881}
   - component: {fileID: 4059221757493701785}
   - component: {fileID: 3086680994156345556}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: RightLeg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -782,7 +782,7 @@ GameObject:
   - component: {fileID: 4499825530940317596}
   - component: {fileID: 5684288191685637501}
   - component: {fileID: 5241406064002306879}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: LeftThigh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -890,7 +890,7 @@ GameObject:
   - component: {fileID: 3931767059974758657}
   - component: {fileID: 4433183775665713155}
   - component: {fileID: 6429872355305305176}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -995,7 +995,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1519809064423407434}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: RightThighPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1033,7 +1033,7 @@ GameObject:
   - component: {fileID: 1380451424230243547}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1151,7 +1151,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7331801032629771218}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: LeftLegPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1186,7 +1186,7 @@ GameObject:
   - component: {fileID: 1792159004187925479}
   - component: {fileID: 4381595246618393857}
   - component: {fileID: 6934907835501538988}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: LeftFoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}

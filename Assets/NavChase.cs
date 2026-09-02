@@ -8,12 +8,15 @@ public class NavChase : MonoBehaviour
 
     [SerializeField] private float detectionRange;
 
+    public float infectionChaseDistance = 2f;
+
     void OnEnable()
     {
         if (target != null) return;
         target = GameObject.FindGameObjectWithTag("Player").transform;
 
         agent = GetComponent<NavMeshAgent>();
+
     }
 
     void Update()
@@ -26,10 +29,8 @@ public class NavChase : MonoBehaviour
         pos2.y = 0;
 
         float dist = Vector3.Distance(pos1, pos2);
-        Debug.Log(dist);
         if (dist <= detectionRange)
         {
-            Debug.Log("can chase");
             agent.SetDestination(target.position);
         }
     }
