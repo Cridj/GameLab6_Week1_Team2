@@ -386,7 +386,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 192, y: 8.000061}
+  m_AnchoredPosition: {x: 164, y: 8.000061}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &101114758
@@ -436,8 +436,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 25
+  m_fontSizeBase: 25
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1816,6 +1816,9 @@ MonoBehaviour:
   - {fileID: 1718541843}
   rareCard: {fileID: 959206447}
   reRollCostText: {fileID: 690725497}
+  dnaAmountText: {fileID: 101114758}
+  dnaAmount: 0
+  cardPanel: {fileID: 0}
 --- !u!1 &587787370
 GameObject:
   m_ObjectHideFlags: 0
@@ -2260,8 +2263,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1580.5554, y: -526.9095}
-  m_SizeDelta: {x: 337.9572, y: 400}
+  m_AnchoredPosition: {x: 1606, y: -526.9095}
+  m_SizeDelta: {x: 436.8175, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &746315162
 MonoBehaviour:
@@ -3628,8 +3631,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 29
+  m_fontSizeBase: 29
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

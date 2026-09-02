@@ -22,15 +22,27 @@ public class ShopManager : MonoBehaviour
     public RareCard rareCard;
 
 
+
     [SerializeField] private TextMeshProUGUI reRollCostText;
-    [SerializeField] private GameObject cardPanel;
+    [SerializeField] private TextMeshProUGUI dnaAmountText;
+    [SerializeField] private int dnaAmount;
+    public int DnaAmount
+    {
+        get { return dnaAmount; }
+        set 
+        { 
+            dnaAmount = value;
+            dnaAmountText.text = dnaAmount.ToString();
+        }
+    }
 
-
-
-    void Start()
+    private void OnEnable()
     {
         distributionMutation();
         distributionRareMutation();
+        //dnaAmount.text = GameInstance.Instance.curDNA.ToString();
+
+        DnaAmount = 5000;
     }
 
     // Update is called once per frame
@@ -50,12 +62,12 @@ public class ShopManager : MonoBehaviour
     [ContextMenu("distributionMutationTest")]
     private void distributionMutation()
     {
-        foreach(var card in commonCard)
+        
+        foreach(var card in commonCard) // 리롤용 재생성
         {
             card.gameObject.SetActive(true);
         }
         List<MutationData> indexList = mutationInfo.MutationData.ToList();
-        // 리스트의 길이만큼 인덱스를 저장해둔다 0~9 까지를 저장.
 
         int count = 3; // 무작위로 몇 개 뽑을 것인지 정함
 
@@ -68,7 +80,6 @@ public class ShopManager : MonoBehaviour
             commonCard[i].cardCost.text = data.MutationCost.ToString();
 
             commonCard[i].buyButton.onClick.RemoveAllListeners();
-
             var card = commonCard[i];
             commonCard[i].buyButton.onClick.AddListener(() =>
             {
@@ -102,19 +113,33 @@ public class ShopManager : MonoBehaviour
         rareCard.cardName.text = indexList[index].RareMutationName;
         rareCard.cardDescription.text = indexList[index].RareMutationDescription;
         rareCard.cardCost.text = indexList[index].RareMutationCost.ToString();
+
+        int cardCostInt = indexList[index].RareMutationCost;
+
+        rareCard.buyButton.onClick.AddListener(() =>
+        {
+            purchaseRareMutation(indexList[index]);
+            rareCard.gameObject.SetActive(false);
+        });
     }
 
 
     //유전자 변이 점수 차감(결제, 리롤 시)
     private void dnaDecrease(int cost = 1)
     {
-
+        DnaAmount -= cost;
     }
 
 
 
     public void purchaseMutation(MutationData data)
     {
+        if (data.MutationCost > DnaAmount)
+        {
+            return;
+        }
+
+
         if (data.MutationName == "돌진 해금")
         {
             for (int j = 0; j < mutationInfo.UnlockMutationData.Count; j++)
@@ -142,20 +167,38 @@ public class ShopManager : MonoBehaviour
             mutationCnt[data.MutationName]++;
         }
 
+
         dnaDecrease(data.MutationCost);
     }
 
 
-    private void purchaseRareMutation()
+    private void purchaseRareMutation(RareMutationData data2)
     {
+        if (data2.RareMutationCost > DnaAmount)
+        {
+            return;
+        }
+
+        if (!mutationCnt.ContainsKey(data2.RareMutationName))
+        {
+            mutationCnt[data2.RareMutationName] = 1;
+        }
+        else
+        {
+            mutationCnt[data2.RareMutationName]++;
+        }
 
         //mutationInfo.MutationData.RemoveAt(index);
-        dnaDecrease();
+        dnaDecrease(data2.RareMutationCost);
     }
 
 
     public void reRoll()
     {
+        if (reRollCost > DnaAmount)
+        {
+            return;
+        }
         distributionMutation();
         reRollCostText.text = reRollCost.ToString();
         dnaDecrease(reRollCost);

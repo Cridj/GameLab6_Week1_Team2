@@ -16,7 +16,7 @@ public class RareMutationData
     public string RareMutationName;
     public string RareMutationDescription;
     public string RareMutationCooldown;
-    public string RareMutationCost;
+    public int RareMutationCost;
 }
 
 public class MutationInfo : MonoBehaviour
