@@ -36,25 +36,25 @@ public class PlayerUI : MonoBehaviour
     {
         comboText.text = cnt.ToString();
         comboText.transform.DOPunchScale(Vector3.one * textPunchScale, duration);
-        if(cnt == 1)
+        if (cnt == 1)
         {
             comboText.color = Color.black;
         }
-        
 
-        if(cnt == 10)
+
+        if (cnt == 10)
         {
             comboText.color = Color.red;
         }
-        else if(cnt == 30)
+        else if (cnt == 30)
         {
             comboText.color = Color.yellow;
         }
-        else if(cnt == 80)
+        else if (cnt == 80)
         {
             comboText.color = Color.green;
         }
-        else if(cnt == 150)
+        else if (cnt == 150)
         {
             comboText.color = Color.blue;
         }

@@ -6,9 +6,9 @@ public class NavChase : MonoBehaviour
     private Transform target = null;
     private NavMeshAgent agent;
 
-    [SerializeField] private float detectionRange;
 
-    public float infectionChaseDistance = 2f;
+    [SerializeField] private float detectionRange;
+    [SerializeField] private Animator animator;
 
     void OnEnable()
     {
@@ -32,6 +32,7 @@ public class NavChase : MonoBehaviour
         if (dist <= detectionRange)
         {
             agent.SetDestination(target.position);
+            animator.Play("Hopak_Run");
         }
     }
 

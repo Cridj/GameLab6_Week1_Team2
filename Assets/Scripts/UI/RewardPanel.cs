@@ -62,7 +62,7 @@ public class RewardPanel : MonoBehaviour
 
         infectionCanvasGroup.alpha = 1f;
         StartCoroutine(Count(500, 0, infectionReward));
-       
+
         yield return new WaitForSeconds(waitTime);
 
         DOTween.To(() => plusCanvanGroup.alpha, x => plusCanvanGroup.alpha = x, 1f, 0.5f);
