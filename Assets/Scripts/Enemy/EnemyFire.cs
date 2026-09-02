@@ -28,7 +28,9 @@ public class EnemyFire : MonoBehaviour
         if (dist <= fireRanage && projectilePrefab != null)
         {
             Vector3 dir = (targetPos2D - curPos2D).normalized;
-            GameObject projectileInstance = Instantiate(projectilePrefab, transform.position + new Vector3(0, 0, 1), Quaternion.identity);
+            GameObject projectileInstance = PoolManager.Instance.Get(PoolType.Projectile);
+            projectileInstance.transform.position = transform.position;
+            projectileInstance.transform.rotation = Quaternion.identity; ;
             EnemyProjectile projectile = projectileInstance.GetComponent<EnemyProjectile>();
             projectile.rb.linearVelocity = dir * projectileSpeed;
             lastfireTime = Time.time;

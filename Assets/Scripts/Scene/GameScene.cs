@@ -58,6 +58,6 @@ public class GameScene : MonoBehaviour
         isFinished = true;
         spawnManager.enabled = false;
         pc.enabled = false;
-        
+
     }
 }

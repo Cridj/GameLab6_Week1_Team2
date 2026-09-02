@@ -8,7 +8,7 @@ public class SpawnData
     public PoolType type;
 
     [Range(0, 100)]
-    public float weight;
+    public int weight;
 }
 
 [CreateAssetMenu(fileName = "StageSpawnData", menuName = "Scriptable Objects/StageSpawnData")]

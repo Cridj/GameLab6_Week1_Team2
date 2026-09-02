@@ -41,6 +41,8 @@ public class PlayerController : MonoBehaviour
     [Header("Current speed [Debug]")]
     public float speed;
 
+    public float maxSpeed = 0f;
+
     public float Speed { get; private set; }
 
     [SerializeField]
@@ -98,6 +100,17 @@ public class PlayerController : MonoBehaviour
         Cursor.visible = false;
     }
 
+
+    public void DisableInput()
+    {
+        playerInput.actions["Left"].performed -= OnLeft;
+        playerInput.actions["Right"].performed -= OnRight;
+        playerInput.actions["Rotate"].performed -= OnRotate;
+        playerInput.actions["Turn"].performed -= OnTurn;
+        playerInput.actions["Turn"].canceled -= OnTurnEnd;
+        playerInput.actions["Jump"].performed -= OnJump;
+        playerInput.actions["Sprint"].performed -= OnSprint;
+    }
 
     public void Init()
     {
@@ -226,6 +239,7 @@ public class PlayerController : MonoBehaviour
     private void IncreaseSpeed()
     {
         speed = Mathf.Clamp(speed + increseSpeedPerCombo, 3f, float.MaxValue);
+        maxSpeed = Mathf.Max(maxSpeed, speed);
         playerUI.SetSpeed(speed * speedModifier);
     }
 
@@ -281,7 +295,7 @@ public class PlayerController : MonoBehaviour
 
     private void InCreaseCombo(bool left)
     {
- 
+        Managers.Instance.Sound.PlayComboSound();
         comboCnt++;
         playerUI.ComboUpdate(comboDuration, comboCnt, comboTimeout);
         leftPressed = left;

@@ -633,10 +633,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3f2a66d5087c4d4a87c339ac8a48a8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fireInterval: 3
+  fireInterval: 5
   projectilePrefab: {fileID: 2149990658594417708, guid: bb531a2d0e2aa614980204503dccff4a, type: 3}
   fireRanage: 5
-  projectileSpeed: 10
+  projectileSpeed: 3
 --- !u!114 &6561322981633061331
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -712,10 +712,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 3527072298633411731}
-  chaseSpeed: 2
-  rotationSpeed: 180
+  chaseSpeed: 1.5
+  rotationSpeed: 120
   detectionRange: 10
-  stopDistance: 2
+  stopDistance: 4
 --- !u!1 &5194061692842792450
 GameObject:
   m_ObjectHideFlags: 0

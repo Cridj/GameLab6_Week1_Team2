@@ -41,4 +41,18 @@ public class SoundManager : MonoBehaviour
         bgmSource.Stop();
     }
 
+    public void PlayComboSound()
+    {
+        int ran = Random.Range(0, 4);
+
+        if (ran == 0)
+            Play("Combo1");
+        else if (ran == 1)
+            Play("Combo2");
+        else if (ran == 2)
+            Play("Combo3");
+        else
+            Play("Combo4");
+    }
+
 }

@@ -15,8 +15,23 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] Renderer[] renderers;
     private Color originalColor;
 
+    public Action GameOver;
+    private bool isDie = false;
+    public bool isGameOver = false;
+
     void OnEnable()
     {
+
+    }
+
+    public void GameEnd()
+    {
+        isGameOver = true;
+    }
+
+    public void Init(int curHp)
+    {
+        maxHp = curHp;
         if (maxHp > 0)
         {
             CurrentHP = maxHp;
@@ -26,9 +41,12 @@ public class PlayerHealth : MonoBehaviour
         if (renderers.Length > 0)
             originalColor = renderers[0].material.color;
     }
-
     public void TakeDamage(int amount)
     {
+        if (isDie || isGameOver)
+        {
+            return;
+        }
         CurrentHP = Mathf.Clamp(CurrentHP - amount, 0, maxHp);
         OnHealthChanged?.Invoke(CurrentHP);
 
@@ -48,7 +66,8 @@ public class PlayerHealth : MonoBehaviour
 
     void Die()
     {
-        Debug.Log("Game Over");
+        isDie = true;
+        GameOver?.Invoke();
     }
 
     void HitFlash()

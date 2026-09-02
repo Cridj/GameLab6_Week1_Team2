@@ -82,7 +82,7 @@ MonoBehaviour:
     m_StrikethroughThickness: 0
     m_TabWidth: 170.57812
   m_Material: {fileID: 4483517840757699852}
-  m_SourceFontFileGUID: 7522032e3bb5ae2478b403c875729790
+  m_SourceFontFileGUID: 4d22af20d4c1de04ea11a92d03fb8a43
   m_CreationSettings:
     sourceFontFileName: 
     sourceFontFileGUID: 7522032e3bb5ae2478b403c875729790
@@ -102,7 +102,7 @@ MonoBehaviour:
     fontStyleModifier: 0
     renderMode: 69652
     includeFontFeatures: 0
-  m_SourceFontFile: {fileID: 0}
+  m_SourceFontFile: {fileID: 12800000, guid: 4d22af20d4c1de04ea11a92d03fb8a43, type: 3}
   m_SourceFontFilePath: 
   m_AtlasPopulationMode: 1
   InternalDynamicOS: 0
@@ -127,10 +127,10 @@ MonoBehaviour:
   m_FontFeatureTable:
     m_MultipleSubstitutionRecords: []
     m_LigatureSubstitutionRecords:
-    - m_ComponentGlyphIDs: 0700000015000000
-      m_LigatureGlyphID: 1472
-    - m_ComponentGlyphIDs: 0f00000015000000
-      m_LigatureGlyphID: 1480
+    - m_ComponentGlyphIDs: 0a0500001200000050000000
+      m_LigatureGlyphID: 4099
+    - m_ComponentGlyphIDs: 0a0500001200000051000000
+      m_LigatureGlyphID: 4100
     m_GlyphPairAdjustmentRecords: []
     m_MarkToBaseAdjustmentRecords: []
     m_MarkToMarkAdjustmentRecords: []

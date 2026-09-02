@@ -10,6 +10,7 @@ public class HeartUI : MonoBehaviour
     void OnEnable()
     {
         playerHealth.OnHealthChanged += SetHeart;
+
     }
 
     public void SetHeart(int amount)

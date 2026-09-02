@@ -11,6 +11,18 @@ public class FollowerManager : MonoBehaviour
     public float gapBetweenLine = 1f;
     private int followersCnt = 0;
 
+    public int FollowerCnt
+    {
+        get { return followersCnt; }
+        set 
+        { 
+            followersCnt = value;
+            ui.UpdateFollowerUI(value);
+        }
+    }
+
+    public PlayerUI ui;
+
     public PlayerController playerController;
 
     void Start()
@@ -54,7 +66,7 @@ public class FollowerManager : MonoBehaviour
             follower.transform.rotation = Quaternion.identity;
             followers.Add(follower);
 
-            followersCnt++;
+            FollowerCnt++;
         }
         else if (followers.Count < maxFollowerPerLine)
         {
@@ -64,12 +76,12 @@ public class FollowerManager : MonoBehaviour
             follower.transform.rotation = Quaternion.identity;
             followers.Add(follower);
 
-            followersCnt++;
+            FollowerCnt++;
         }
         else
         {
-            int lineNum = followersCnt / maxFollowerPerLine;
-            int x = followersCnt % maxFollowerPerLine;
+            int lineNum = FollowerCnt / maxFollowerPerLine;
+            int x = FollowerCnt % maxFollowerPerLine;
 
             GameObject targetFollower = followers[x];
             follower = PoolManager.Instance.Get(PoolType.Infected);
@@ -84,7 +96,7 @@ public class FollowerManager : MonoBehaviour
                 follower.transform.localPosition = new Vector3(-gapBetweenLine * ((lineNum + 1) / 2), 0, 0);
 
 
-            followersCnt++;
+            FollowerCnt++;
         }
 
         follower.GetComponentInChildren<Animator>().Play("Hopak");
