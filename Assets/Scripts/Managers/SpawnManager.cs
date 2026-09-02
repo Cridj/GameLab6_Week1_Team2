@@ -10,6 +10,10 @@ public class SpawnManager : MonoBehaviour
 
     private float timeSinceLastSpawned;
 
+    private int totalWeight = 0;
+
+    public int NeutralCnt { get; private set; }
+
     void Awake()
     {
         if (Instance != null)
@@ -19,20 +23,23 @@ public class SpawnManager : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
-    void Start()
-    {
-        Init(curStageSpawnData);
-        target = GameObject.FindGameObjectWithTag("Player").transform;
-        InitialSpawn();
     }
 
     public void Init(StageSpawnData stageSpawnData)
     {
         curStageSpawnData = stageSpawnData;
         timeSinceLastSpawned = 0f;
+
+        totalWeight = 0;
+        foreach (SpawnData spawnData in stageSpawnData.spawnDataList)
+        {
+            totalWeight += spawnData.weight;
+        }
+
+        NeutralCnt = 0;
+
+        target = GameObject.FindGameObjectWithTag("Player").transform;
+        InitialSpawn();
     }
 
     [ContextMenu("Initial Spawn")]
@@ -48,6 +55,7 @@ public class SpawnManager : MonoBehaviour
             obj.transform.position = spawnPos;
             obj.transform.rotation = Quaternion.identity;
         }
+        NeutralCnt += curStageSpawnData.initialNeutralAmount;
     }
 
     void Update()
@@ -58,7 +66,6 @@ public class SpawnManager : MonoBehaviour
             Spawn();
             timeSinceLastSpawned = 0f;
         }
-
     }
 
     void Spawn()
@@ -69,22 +76,24 @@ public class SpawnManager : MonoBehaviour
         spawnPos += Random.insideUnitSphere * curStageSpawnData.nearPlayerSpawnRadius;
         spawnPos.y = 1;
 
-        GameObject obj = PoolManager.Instance.Get(GetSpawnType());
+        PoolType type = GetSpawnType();
+        if (type == PoolType.Neutral) NeutralCnt++;
+        GameObject obj = PoolManager.Instance.Get(type);
         obj.transform.position = spawnPos;
         obj.transform.rotation = Quaternion.identity;
+
+
     }
 
     PoolType GetSpawnType()
     {
-        float cumulative = 0f;
-
         foreach (var spawnData in curStageSpawnData.spawnDataList)
         {
-            cumulative += spawnData.weight;
-            int randomVal = Random.Range(1, 100);
-
-            if (randomVal <= cumulative)
+            int randomWeight = Random.Range(0, totalWeight);
+            if (randomWeight < spawnData.weight)
+            {
                 return spawnData.type;
+            }
 
         }
 
