@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
     private float mouseSensitivity = 1f;
     [SerializeField]
     [Header("Current speed [Debug]")]
-    private float speed;
+    public float speed;
 
     public float Speed { get; private set; }
 

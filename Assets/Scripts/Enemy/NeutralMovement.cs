@@ -18,7 +18,7 @@ public class NeutralMovement : MonoBehaviour
     {
         timeSinceLastUpdate += Time.deltaTime;
 
-        if (timeSinceLastUpdate >= updateInterval)
+        if (agent.isOnNavMesh && timeSinceLastUpdate >= updateInterval)
         {
             Vector3 randomPosition = GetRandomPositionOnNavMesh();
             agent.SetDestination(randomPosition);

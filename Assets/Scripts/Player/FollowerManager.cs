@@ -27,15 +27,18 @@ public class FollowerManager : MonoBehaviour
             positionHistory.Insert(0, transform.position);
         }
 
-        int index = 1;
-        foreach (var follower in followers)
+        if (playerController.speed > 0.1f)
         {
-            Vector3 point = positionHistory[Mathf.Min(index * Gap, positionHistory.Count - 1)];
-            point.y = 1;
-            Vector3 moveDirection = point - follower.transform.position;
-            follower.transform.position += moveDirection * 10f * Time.deltaTime;
-            follower.transform.LookAt(point);
-            index++;
+            int index = 1;
+            foreach (var follower in followers)
+            {
+                Vector3 point = positionHistory[Mathf.Min(index * Gap, positionHistory.Count - 1)];
+                point.y = 1;
+                Vector3 moveDirection = point - follower.transform.position;
+                follower.transform.position += moveDirection * 10f * Time.deltaTime;
+                follower.transform.LookAt(point);
+                index++;
+            }
         }
     }
 
@@ -79,5 +82,10 @@ public class FollowerManager : MonoBehaviour
 
         follower.GetComponentInChildren<Animator>().Play("Hopak");
 
+    }
+
+    public void TriggerByJunior()
+    {
+        MakeFollower();
     }
 }

@@ -6,8 +6,14 @@ public class Infection : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            other.GetComponentInChildren<FollowerManager>().MakeFollower();
-            Destroy(gameObject);
+            Debug.Log("find player");
+            HopackCarrier hopackCarrier = other.GetComponent<HopackCarrier>();
+            if (hopackCarrier != null)
+            {
+                hopackCarrier.followerManager.MakeFollower();
+                Destroy(gameObject);
+            }
+
         }
     }
 
