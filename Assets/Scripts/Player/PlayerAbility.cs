@@ -33,7 +33,7 @@ public class PlayerAbility : MonoBehaviour
 
 
         // Initialize hidden abilities 임시
-        hiddenAbilities.Add(HiddenAbilityType.Windmill, 1);
+        //hiddenAbilities.Add(HiddenAbilityType.Windmill, 1);
     }
 
 

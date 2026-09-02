@@ -28,7 +28,7 @@ public class PlayerUI : MonoBehaviour
         comboGuide.color = new Color(guideOriginColor.a, guideOriginColor.g, guideOriginColor.b, 0f);
         comboGuide.DOColor(new Color(guideOriginColor.a, guideOriginColor.g, guideOriginColor.b, 1f), duration);
         comboGuide.transform.localScale = Vector3.one * 1.3f;
-        comboGuide.transform.DOScale(0.5f, duration * 0.85f).OnComplete(() => comboGuide.transform.DOScale(Vector3.one * 0.3f, timeout));
+        comboGuide.transform.DOScale(0.5f, duration).OnComplete(() => comboGuide.transform.DOScale(Vector3.one * 0.3f, timeout));
         comboGuide.gameObject.SetActive(true);
     }
 

@@ -41,6 +41,8 @@ public class PlayerController : MonoBehaviour
     [Header("Current speed [Debug]")]
     private float speed;
 
+    public float Speed { get; private set; }
+
     [SerializeField]
     [Header("Deceleration smooth curve")]
     private AnimationCurve decelerationCurve;
