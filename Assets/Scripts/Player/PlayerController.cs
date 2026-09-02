@@ -1,6 +1,6 @@
 using DG.Tweening;
 using System.Collections;
-using System.Threading;
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -23,11 +23,11 @@ public class PlayerController : MonoBehaviour
 
 
     [SerializeField] private float comboDuration = defaultDuration;
-    
+
     private bool leftPressed = false;
 
     [SerializeField]
-    [Header("Combo timeout until the next combo")] 
+    [Header("Combo timeout until the next combo")]
     private float comboTimeout = 0.3f;
     [SerializeField]
     private const float defaultDuration = 0.4f;
@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
     private float mouseSensitivity = 1f;
     [SerializeField]
     [Header("Current speed [Debug]")]
-    private float speed;
+    public float speed;
 
     public float Speed { get; private set; }
 
@@ -48,7 +48,7 @@ public class PlayerController : MonoBehaviour
     private AnimationCurve decelerationCurve;
 
     [SerializeField]
-    [Header("Duration time to stop")]    
+    [Header("Duration time to stop")]
     float stopDuration = 1f;
 
     [SerializeField] float decelerationTime;
@@ -60,7 +60,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     [Header("Rotate speed with use keyboard arrows")]
-    [Range(0.1f, 2f)] 
+    [Range(0.1f, 2f)]
     private float rotSpeed = 1f;
 
     [SerializeField]
@@ -113,6 +113,7 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Rotate"].performed += OnRotate;
         playerInput.actions["Turn"].performed += OnTurn;
         playerInput.actions["Turn"].canceled += OnTurnEnd;
+
         playerInput.actions["Jump"].performed += OnJump;
         playerInput.actions["Sprint"].performed += OnSprint;
 
@@ -120,7 +121,7 @@ public class PlayerController : MonoBehaviour
         {
             if (playerAbility.commonAbilities.TryGetValue(CommonAbilityType.Growing, out int value)) // 거대화
             {
-                foreach(var hopak in hopakJuniors) 
+                foreach (var hopak in hopakJuniors)
                 {
                     hopak.transform.localScale *= 1.3f * value;
                 }
@@ -128,7 +129,7 @@ public class PlayerController : MonoBehaviour
             }
             foreach (var ability in playerAbility.commonAbilities)
             {
-                switch(ability.Key)
+                switch (ability.Key)
                 {
                     case CommonAbilityType.HopakJunior: // 호팍 주니어
                         for (int i = 0; i < ability.Value; i++)
@@ -210,7 +211,7 @@ public class PlayerController : MonoBehaviour
         {
             if (prevComboCnt < comboCnt)
                 yield break;
-            if(timeout > comboTimeout)
+            if (timeout > comboTimeout)
             {
                 BreakCombo();
                 yield break;
@@ -256,7 +257,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnLeft(CallbackContext context)
     {
-        if(leftPressed || !comboAvailable)
+        if (leftPressed || !comboAvailable)
         {
             BreakCombo();
             return;
@@ -311,10 +312,10 @@ public class PlayerController : MonoBehaviour
     {
         if (isSprint)
             return;
-        if(sprintLevel > 0)
-        {     
+        if (sprintLevel > 0)
+        {
             StartCoroutine(Sprint(sprintDuration));
-        }    
+        }
     }
 
     private void OnJump(CallbackContext context)
