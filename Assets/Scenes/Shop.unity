@@ -1472,7 +1472,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &511047700
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1699,7 +1699,7 @@ MonoBehaviour:
     MutationDescription: "\uB3CC\uC9C4\uC758 \uC7AC\uC0AC\uC6A9 \uB300\uAE30\uC2DC\uAC04\uC774
       20% \uAC10\uC18C\uD569\uB2C8\uB2E4."
     MutationCooldown: 
-    MutationCost: 400
+    MutationCost: 200
   RareMutationData:
   - type: 0
     RareMutationName: "\uC708\uB4DC\uBC00"
@@ -1707,7 +1707,7 @@ MonoBehaviour:
       \uC708\uB4DC\uBC00\uC740 \uB3CC\uC9C4\uD558\uB294 \uB3D9\uC548 \uC18D\uB3C4\uAC00
       \uC904\uC5B4\uB4DC\uB294 \uB300\uC2E0 \uD0C0\uACA9 \uBC94\uC704\uAC00 \uB298\uC5B4\uB0A9\uB2C8\uB2E4. "
     RareMutationCooldown: 
-    RareMutationCost: 400
+    RareMutationCost: 200
   - type: 1
     RareMutationName: "\uC2B9\uBD80\uC0AC"
     RareMutationDescription: "\uCCB4\uB825\uC774 \uD55C \uCE78\uC774 \uB429\uB2C8\uB2E4.
@@ -1715,7 +1715,7 @@ MonoBehaviour:
       1\uBD84\uC5D0\uC11C 30\uCD08\uB85C \uC904\uC5B4\uB4E4\uACE0 \uC2A4\uD14C\uC774\uC9C0
       \uD074\uB9AC\uC5B4 \uD68D\uB4DD \uBCF4\uC0C1\uC774 2\uBC30\uAC00 \uB429\uB2C8\uB2E4."
     RareMutationCooldown: 
-    RareMutationCost: 400
+    RareMutationCost: 200
 --- !u!114 &543503411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2845,7 +2845,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1060038100
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4550,7 +4550,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1518692591
 RectTransform:
   m_ObjectHideFlags: 0

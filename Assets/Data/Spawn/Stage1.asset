@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Stage1
   m_EditorClassIdentifier: 
   playerInitialPos: {x: 0, y: 0, z: 0}
-  initialSpawnRadius: 100
-  initialNeutralAmount: 100
+  initialSpawnRadius: 50
+  initialNeutralAmount: 500
   spawnDataList:
   - type: 0
     weight: 70
@@ -22,7 +22,7 @@ MonoBehaviour:
     weight: 15
   - type: 2
     weight: 15
-  nearPlayerSpawnRadius: 100
+  nearPlayerSpawnRadius: 30
   spawnInterval: 0.5
   maxNeutralAmount: 100
   maxMedicAmount: 10

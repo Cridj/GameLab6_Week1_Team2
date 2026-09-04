@@ -12,18 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2fb301bc79024646a1b2a5d6b21ac17, type: 3}
   m_Name: Stage4
   m_EditorClassIdentifier: 
-  playerInitialPos: {x: 350, y: 1, z: 350}
-  nearPlayerSpawnRadius: 100
+  playerInitialPos: {x: 0, y: 0, z: 0}
   initialSpawnRadius: 50
-  initialNeutralAmount: 250
+  initialNeutralAmount: 500
+  spawnDataList:
+  - type: 0
+    weight: 70
+  - type: 1
+    weight: 15
+  - type: 2
+    weight: 15
+  nearPlayerSpawnRadius: 30
+  spawnInterval: 0.5
   maxNeutralAmount: 100
   maxMedicAmount: 10
   maxPoliceAmount: 10
-  spawnDataList:
-  - prefab: {fileID: 6853219938604113496, guid: 7764a4623796db94397ff670e57a9acb, type: 3}
-    weight: 70
-  - prefab: {fileID: 5091173158714399402, guid: 94668e35be305394881ef5c52bf895d5, type: 3}
-    weight: 15
-  - prefab: {fileID: 7977226667062695550, guid: 78a57a196ec18f342aaaab2695c95853, type: 3}
-    weight: 15
-  spawnInterval: 1

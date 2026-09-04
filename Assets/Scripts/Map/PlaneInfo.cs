@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlaneInfo : MonoBehaviour
@@ -7,7 +8,14 @@ public class PlaneInfo : MonoBehaviour
 
     BoxCollider col;
     public int spawnPitPerPlane = 100;
+    public int spawnObstaclePerPlane = 10;
+
     public GameObject pitPrefab;
+    public GameObject dopPitPrefab;
+
+    public GameObject obstaclePrefab;
+
+    public float dropDelay = 0.5f;
 
     private void Awake()
     {
@@ -16,9 +24,20 @@ public class PlaneInfo : MonoBehaviour
 
     private void Start()
     {
-        if(GameInstance.Instance.curStageLevel == 3)
+        if (GameInstance.Instance.curStageLevel == 2)
         {
+            SpawnRandomObstacle();
+        }
+        if (GameInstance.Instance.curStageLevel == 3)
+        {
+            SpawnRandomObstacle();
             SpawnRandomPitfall();
+        }
+        if (GameInstance.Instance.curStageLevel == 4)
+        {
+            SpawnRandomObstacle();
+            SpawnRandomPitfall();
+            StartCoroutine(DropPit());
         }
     }
 
@@ -45,6 +64,28 @@ public class PlaneInfo : MonoBehaviour
             var pos = GetRandomPosInCollider();
 
             Instantiate(pitPrefab, pos, Quaternion.identity);
+        }
+    }
+
+    [ContextMenu("Spawn Obstacle Test")]
+    public void SpawnRandomObstacle()
+    {
+        for (int i = 0; i < spawnObstaclePerPlane; i++)
+        {
+            var pos = GetRandomPosInCollider();
+
+            Instantiate(obstaclePrefab, pos, Quaternion.identity);
+        }
+    }
+
+    IEnumerator DropPit()
+    {
+        while(true)
+        {
+            var pos = GetRandomPosInCollider();
+            GameObject go = Instantiate(dopPitPrefab, new Vector3(pos.x, 100f, pos.z), Quaternion.identity);
+            yield return new WaitForSeconds(dropDelay);
+            Destroy(go, 10f);
         }
     }
 }

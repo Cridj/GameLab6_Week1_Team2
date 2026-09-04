@@ -1,86 +1,99 @@
+using AYellowpaper.SerializedCollections;
+using FishNet.Object;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class SpawnManager : MonoBehaviour
+struct Spawndata
 {
-    public static SpawnManager Instance { get; private set; }
-
-    public StageSpawnData curStageSpawnData;
-
-    private Transform target;
-
-    private float timeSinceLastSpawned;
-
-    void Awake()
+    public Spawndata(int id, Vector3 pos)
     {
-        if (Instance != null)
+        this.id = id;
+        this.pos = pos;
+    }
+    public int id;
+    public Vector3 pos;
+}
+
+public class SpawnManager : NetworkBehaviour
+{
+    Dictionary<int,  Spawndata> spawnData = new(); // 서버 데이터 저장용
+    Dictionary<int, Neutral> spawnedNeutral = new();
+    [SerializeField] private Collider plane;
+    [SerializeField] private int intialSpawnCount = 1000;
+
+    [SerializeField] private int idCounter = 0;
+    [SerializeField] private Neutral neutral;
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+
+        SpawnIntialNeutral();
+    }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        SpawnNeutralReq();
+    }
+
+    private Vector3 GetRandomPosInCollider()
+    {
+        Vector3 originPosition = plane.transform.position;
+        // 콜라이더의 사이즈를 가져오는 bound.size 사용
+        float range_X = plane.bounds.size.x;
+        float range_Z = plane.bounds.size.z;
+
+        range_X = Random.Range((range_X / 2) * -1, range_X / 2);
+        range_Z = Random.Range((range_Z / 2) * -1, range_Z / 2);
+        Vector3 RandomPostion = new Vector3(range_X, 1f, range_Z);
+
+        Vector3 respawnPosition = originPosition + RandomPostion;
+        return respawnPosition;
+    }
+
+
+    [Server]
+    private void SpawnIntialNeutral()
+    {
+        for (int i = 0; i < intialSpawnCount; i++)
         {
-            Destroy(gameObject);
-            return;
+            int id = idCounter++;
+            var pos = GetRandomPosInCollider();
+            Spawndata data = new Spawndata(id, pos);
+            spawnData.Add(id, data);
         }
-
-        Instance = this;
+        SpawnIntialNeutralAck(spawnData);
     }
 
 
-    public void Init(StageSpawnData stageSpawnData)
+    [ServerRpc(RequireOwnership = false)]
+    private void SpawnNeutralReq()
     {
-        curStageSpawnData = stageSpawnData;
-        timeSinceLastSpawned = 0f;
-        target = GameObject.FindGameObjectWithTag("Player").transform;
-        InitialSpawn();
+        SpawnNeutral();
     }
 
-    [ContextMenu("Initial Spawn")]
-    void InitialSpawn()
+
+    [Server]
+    private void SpawnNeutral()
     {
-        Vector3 spawnPos = curStageSpawnData.playerInitialPos;
-        for (int i = 0; i < curStageSpawnData.initialNeutralAmount; i++)
+        SpawnIntialNeutralAck(spawnData);
+    }
+
+
+    [ObserversRpc]
+    [Client]
+    private void SpawnIntialNeutralAck(Dictionary<int, Spawndata> dict)
+    {
+        foreach(var data in dict)
         {
-            spawnPos += Random.insideUnitSphere * curStageSpawnData.initialSpawnRadius;
-            spawnPos.y = 1;
-
-            GameObject obj = PoolManager.Instance.Get(PoolType.Neutral);
-            obj.transform.position = spawnPos;
-            obj.transform.rotation = Quaternion.identity;
+            if(!spawnedNeutral.ContainsKey(data.Key))
+            {
+                Neutral n = Instantiate(neutral);
+                n.Id = data.Key;
+                n.transform.position = data.Value.pos;
+                spawnedNeutral.Add(data.Key, n);
+            }
         }
-    }
-
-    void Update()
-    {
-        timeSinceLastSpawned += Time.deltaTime;
-        if (timeSinceLastSpawned >= curStageSpawnData.spawnInterval)
-        {
-            Spawn();
-            timeSinceLastSpawned = 0f;
-        }
-    }
-
-    void Spawn()
-    {
-        if (target == null) return;
-        Vector3 spawnPos = target.position;
-
-        spawnPos += Random.insideUnitSphere * curStageSpawnData.nearPlayerSpawnRadius;
-        spawnPos.y = 1;
-
-        GameObject obj = PoolManager.Instance.Get(GetSpawnType());
-        obj.transform.position = spawnPos;
-        obj.transform.rotation = Quaternion.identity;
-    }
-
-    PoolType GetSpawnType()
-    {
-        float cumulative = 0f;
-
-        foreach (var spawnData in curStageSpawnData.spawnDataList)
-        {
-            cumulative += spawnData.weight;
-            int randomVal = Random.Range(1, 100);
-
-            if (randomVal <= cumulative)
-                return spawnData.type;
-        }
-
-        return curStageSpawnData.spawnDataList[0].type;
     }
 }

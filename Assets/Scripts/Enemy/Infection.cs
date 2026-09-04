@@ -4,7 +4,7 @@ public class Infection : MonoBehaviour
 {
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") || other.CompareTag("JuniorHopak"))
+        if (other.CompareTag("Player"))
         {
             if (other.TryGetComponent(out HopackCarrier hopackCarrier))
             {

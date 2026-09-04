@@ -26,7 +26,7 @@ public class PlayerUI : MonoBehaviour
     public void UpdateFollowerUI(int cnt)
     {
         currentInfection.text = cnt.ToString();
-        currentInfection.transform.DOPunchScale(Vector3.one * 0.5f, 0.2f);
+        currentInfection.transform.DOPunchScale(Vector3.one * 0.4f, 0.1f).OnComplete(()=> currentInfection.transform.localScale = Vector3.one);
     }
 
     private void ShowComboGuide(float duration = 0.4f, float timeout = 0.5f)
@@ -61,9 +61,13 @@ public class PlayerUI : MonoBehaviour
         {
             comboText.color = Color.green;
         }
-        else if (cnt == 150)
+        else if (cnt == 130)
         {
             comboText.color = Color.blue;
+        }
+        else if(cnt == 200)
+        {
+            comboText.color = Color.magenta;
         }
     }
 

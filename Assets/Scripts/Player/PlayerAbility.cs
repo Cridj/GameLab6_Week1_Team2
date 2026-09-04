@@ -11,8 +11,3 @@ public enum HiddenAbilityType
 {
     Windmill, Gambler
 }
-
-public class PlayerAbility : MonoBehaviour
-{
-
-}

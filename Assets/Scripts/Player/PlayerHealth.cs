@@ -24,6 +24,14 @@ public class PlayerHealth : MonoBehaviour
 
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.CompareTag("Pit"))
+        {
+            TakeDamage(1);
+        }
+    }
+
     public void GameEnd()
     {
         isGameOver = true;

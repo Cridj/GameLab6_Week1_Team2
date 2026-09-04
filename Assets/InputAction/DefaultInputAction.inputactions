@@ -75,6 +75,17 @@
                 },
                 {
                     "name": "",
+                    "id": "61196e4a-7b0f-4e0c-8a9b-3d8a72e16cbf",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Right",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "2902676d-2083-47a1-b22f-4c70e7f9399a",
                     "path": "<Keyboard>/a",
                     "interactions": "",
@@ -86,8 +97,41 @@
                 },
                 {
                     "name": "",
+                    "id": "7581d3ef-dab5-4280-982d-bf1d50205ed5",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Left",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "017bef67-808b-4693-8657-aa36d3141399",
                     "path": "<Mouse>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Rotate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4c30875d-af34-4daa-ae2d-daa13b3705f5",
+                    "path": "<Gamepad>/rightStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Rotate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "804d83cb-c13f-4164-a665-4d3842158bd1",
+                    "path": "<Gamepad>/leftStick",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -141,6 +185,17 @@
                 },
                 {
                     "name": "",
+                    "id": "8dcd045d-1b02-4c17-b17a-82b2951fcce7",
+                    "path": "<Gamepad>/rightStick/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "9f79b995-a818-4f56-9000-e94cd3e06838",
                     "path": "<Mouse>/leftButton",
                     "interactions": "",
@@ -154,6 +209,17 @@
                     "name": "",
                     "id": "76d94358-6ed8-46db-affd-2ad3b11a657b",
                     "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Sprint",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4980dfe9-5ef6-4d02-b631-680382d5ef74",
+                    "path": "<Gamepad>/rightStick/right",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

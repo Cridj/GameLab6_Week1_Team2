@@ -17,13 +17,9 @@ public class FollowerManager : MonoBehaviour
         set 
         { 
             followersCnt = value;
-            ui.UpdateFollowerUI(value);
         }
     }
 
-    public PlayerUI ui;
-
-    public PlayerController playerController;
 
     void Start()
     {
@@ -39,18 +35,15 @@ public class FollowerManager : MonoBehaviour
             positionHistory.Insert(0, transform.position);
         }
 
-        if (playerController.speed > 0.1f)
+        int index = 1;
+        foreach (var follower in followers)
         {
-            int index = 1;
-            foreach (var follower in followers)
-            {
-                Vector3 point = positionHistory[Mathf.Min(index * Gap, positionHistory.Count - 1)];
-                point.y = 1;
-                Vector3 moveDirection = point - follower.transform.position;
-                follower.transform.position += moveDirection * 10f * Time.deltaTime;
-                follower.transform.LookAt(point);
-                index++;
-            }
+            Vector3 point = positionHistory[Mathf.Min(index * Gap, positionHistory.Count - 1)];
+            point.y = 1;
+            Vector3 moveDirection = point - follower.transform.position;
+            follower.transform.position += moveDirection * 10f * Time.deltaTime;
+            follower.transform.LookAt(point);
+            index++;
         }
     }
 
@@ -59,7 +52,7 @@ public class FollowerManager : MonoBehaviour
         GameObject follower;
         if (followers.Count == 0)
         {
-            Vector3 spawnPos = positionHistory[0] - transform.forward * 1.5f;
+            Vector3 spawnPos = positionHistory[0] - transform.forward * 0.3f;
             spawnPos.y += 2;
             follower = PoolManager.Instance.Get(PoolType.Infected);
             follower.transform.position = spawnPos;
