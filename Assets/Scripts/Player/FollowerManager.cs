@@ -17,7 +17,6 @@ public class FollowerManager : MonoBehaviour
         set 
         { 
             followersCnt = value;
-            ui.UpdateFollowerUI(value);
         }
     }
 

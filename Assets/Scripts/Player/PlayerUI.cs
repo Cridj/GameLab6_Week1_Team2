@@ -7,27 +7,15 @@ public class PlayerUI : MonoBehaviour
 {
     [SerializeField] private Image comboGuide;
     [SerializeField] private TextMeshProUGUI comboText;
-    [SerializeField] private TextMeshProUGUI speedText;
 
     [SerializeField] private float textPunchScale = 1.3f;
 
-    [SerializeField] private TextMeshProUGUI currentInfection;
     private Color guideOriginColor;
     private void Start()
     {
         guideOriginColor = comboGuide.color;
     }
 
-    public void SetSpeed(float speed)
-    {
-        speedText.text = speed.ToString("0") + " km/h";
-    }
-
-    public void UpdateFollowerUI(int cnt)
-    {
-        currentInfection.text = cnt.ToString();
-        currentInfection.transform.DOPunchScale(Vector3.one * 0.5f, 0.2f);
-    }
 
     private void ShowComboGuide(float duration = 0.4f, float timeout = 0.5f)
     {

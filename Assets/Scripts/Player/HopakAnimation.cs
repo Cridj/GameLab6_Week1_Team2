@@ -16,21 +16,10 @@ public class HopakAnimation : MonoBehaviour
         animator.speed = 2.3f - speed * 4f;
         if (left)
         {
-            foreach (var junior in hopakJuniors)
-            {
-                if (junior.gameObject.activeSelf)
-                    junior.Play("HopakLeft");
-            }
             animator.Play("HopakLeft");
-
         }
         else
         {
-            foreach (var junior in hopakJuniors)
-            {
-                if (junior.gameObject.activeSelf)
-                    junior.Play("HopakRight");
-            }
             animator.Play("HopakRight");
         }
     }
@@ -44,11 +33,6 @@ public class HopakAnimation : MonoBehaviour
     {
         isWindmill = true;
         animator.Play("Windmill");
-        foreach (var junior in hopakJuniors)
-        {
-            if (junior.gameObject.activeSelf)
-                junior.Play("Windmill");
-        }
         yield return new WaitForSeconds(duration);
         isWindmill = false;
     }

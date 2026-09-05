@@ -18,11 +18,12 @@ public class EnemyChase : MonoBehaviour
         if (target != null) return;
         target = GameObject.FindGameObjectWithTag("Player").transform;
     }
-
+     
     void Update()
     {
         if (target == null) return;
 
+        /* 매 프레임 적과 플레이어 사이의 거리를 구해 거리가 정해진 수치(Detection Range)보다 낮으면 */
         float dist = Vector3.Distance(transform.position, target.position);
         if (dist <= detectionRange)
         {
@@ -48,6 +49,7 @@ public class EnemyChase : MonoBehaviour
         }
     }
 
+    //
     void LookAtPlayer(Vector3 dir)
     {
         if (dir.sqrMagnitude > 0.01f)

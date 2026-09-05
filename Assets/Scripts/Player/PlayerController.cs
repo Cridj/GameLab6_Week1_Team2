@@ -11,10 +11,8 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField]
     private PlayerInput playerInput;
-    private PlayerAbility playerAbility;
 
     [SerializeField] private PlayerUI playerUI;
-    private CharacterController cc;
     private HopakAnimation hopakAnim;
 
     [SerializeField]
@@ -35,7 +33,7 @@ public class PlayerController : MonoBehaviour
     private TrailRenderer trail;
 
     [SerializeField]
-    [Header("Mouse Seneitivity")]
+    [Header("Mouse Sensitivity")]
     private float mouseSensitivity = 1f;
     [SerializeField]
     [Header("Current speed [Debug]")]
@@ -65,6 +63,8 @@ public class PlayerController : MonoBehaviour
     [Range(0.1f, 2f)]
     private float rotSpeed = 1f;
 
+
+    // 감속 관련 변수인 듯 
     [SerializeField]
     [Header("Decrease combo duration per combo")]
     [Range(0.98f, 0.999f)] private float comboDurationDecayRate = 0.99f;
@@ -74,31 +74,23 @@ public class PlayerController : MonoBehaviour
     private float jumpPower = 7.5f;
 
     [SerializeField]
-    private GameObject[] hopakJuniors;
-    [SerializeField]
     private GameObject hopakPlayer;
     [SerializeField]
     private float sprintDuration = 5f;
     private float curRotateInput;
     bool isDecelerating;
-    private int bonusHeart;
     private Vector3 jumpDir;
     private float speedModifier = 1f;
 
     [SerializeField] private float sprintCooldown = 15f;
-    private bool isSprint = false;
 
-    //Ability levels
-    private int sprintLevel;
-    private int jumpLevel;
-    private int spitLevel;
     private bool isStarted = false;
-    private bool isFinish = false;
 
 
     void Start()
     {
         Cursor.visible = false;
+        Init();
     }
 
 
@@ -111,15 +103,12 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Turn"].canceled -= OnTurnEnd;
         playerInput.actions["Jump"].performed -= OnJump;
         playerInput.actions["Sprint"].performed -= OnSprint;
-        isFinish = true;
     }
 
     public void Init()
     {
         //Component initialization
-        cc = GetComponent<CharacterController>();
         hopakAnim = GetComponent<HopakAnimation>();
-        playerAbility = GetComponent<PlayerAbility>();
 
         //Input action binding
         playerInput.actions["Left"].performed += OnLeft;
@@ -131,39 +120,6 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Jump"].performed += OnJump;
         playerInput.actions["Sprint"].performed += OnSprint;
 
-        //ability initialization
-        {
-            if (GameInstance.Instance.commonAbilities.TryGetValue(CommonAbilityType.Growing, out int value)) // 거대화
-            {
-                foreach (var hopak in hopakJuniors)
-                {
-                    hopak.transform.localScale *= 1.3f * value;
-                }
-                hopakPlayer.transform.localScale *= 1.3f;
-            }
-            foreach (var ability in GameInstance.Instance.commonAbilities)
-            {
-                switch (ability.Key)
-                {
-                    case CommonAbilityType.HopakJunior: // 호팍 주니어
-                        for (int i = 0; i < ability.Value; i++)
-                        {
-                            hopakJuniors[i].SetActive(true);
-                            hopakJuniors[i].transform.DOPunchScale(Vector3.one * 0.8f, 1f);
-                        }
-                        break;
-                    case CommonAbilityType.Restoration: // 바이러스 회복
-                        bonusHeart = ability.Value;
-                        break;
-                    case CommonAbilityType.Sprint:
-                        sprintLevel = ability.Value;
-                        break;
-                    case CommonAbilityType.Jump:
-                        jumpLevel = ability.Value;
-                        break;
-                }
-            }
-        }
         isStarted = true;
     }
 
@@ -173,15 +129,13 @@ public class PlayerController : MonoBehaviour
             return;
         Decelerating();
         transform.Rotate(0, curRotateInput * rotSpeed, 0);
-
-        jumpDir.y += Physics.gravity.y * Time.deltaTime;
-        cc.Move(transform.forward * speedModifier * speed * Time.deltaTime);
     }
 
     private void Decelerating()
     {
         if (isDecelerating)
         {
+            // 손을 떼고 있는 모든 순간 어느정도 감속을 하기 때문에, 콤보가 끊겨서 감속하는 건지 원래 감속하는 건지 구분.
             if (comboCnt != 0)
             {
                 isDecelerating = false;
@@ -191,7 +145,6 @@ public class PlayerController : MonoBehaviour
                 decelerationTime += Time.deltaTime;
                 float t = Mathf.Clamp01(decelerationTime / stopDuration);
                 speed *= decelerationCurve.Evaluate(t);
-                playerUI.SetSpeed(speed * speedModifier);
 
                 if (t >= 1f)
                 {
@@ -213,70 +166,43 @@ public class PlayerController : MonoBehaviour
         playerUI.ComboBreak();
     }
 
-    private IEnumerator WaitCombo()
-    {
-        comboAvailable = false;
-        yield return new WaitForSeconds(comboDuration);
-        comboAvailable = true;
-        StartCoroutine(WaitComboTimeout(comboCnt));
-    }
+    //private IEnumerator WaitCombo()
+    //{
+    //    comboAvailable = false;
+    //    yield return new WaitForSeconds(comboDuration);
+    //    comboAvailable = true;
+    //    StartCoroutine(WaitComboTimeout(comboCnt));
+    //}
 
-    private IEnumerator WaitComboTimeout(int prevComboCnt)
-    {
-        float timeout = 0f;
-        while (true)
-        {
-            if (prevComboCnt < comboCnt)
-                yield break;
-            if (timeout > comboTimeout)
-            {
-                BreakCombo();
-                yield break;
-            }
-            timeout += Time.deltaTime;
-            yield return null;
-        }
-    }
+    //private IEnumerator WaitComboTimeout(int prevComboCnt)
+    //{
+    //    float timeout = 0f;
+    //    while (true)
+    //    {
+    //        if (prevComboCnt < comboCnt)
+    //            yield break;
+    //        if (timeout > comboTimeout)
+    //        {
+    //            BreakCombo();
+    //            yield break;
+    //        }
+    //        timeout += Time.deltaTime;
+    //        yield return null;
+    //    }
+    //}
 
-    private void IncreaseSpeed()
+    private IEnumerator Windmill(float duration)
     {
-        speed = Mathf.Clamp(speed + increseSpeedPerCombo, 3f, float.MaxValue);
-        maxSpeed = Mathf.Max(maxSpeed, speed);
-        playerUI.SetSpeed(speed * speedModifier);
-    }
-
-    private IEnumerator Sprint(float duration)
-    {
-        isSprint = true;
-        trail.enabled = true;
-        speedModifier = 1.5f;
-        if (GameInstance.Instance.hiddenAbilities.TryGetValue(HiddenAbilityType.Windmill, out var value))
-        {
-            Debug.Log("Windmill!");
-            hopakAnim.PlayWindmill(duration);
-            //TODO 윈드밀 특수효과 추가
-        }
-        else
-        {
-            Debug.Log("Sprint!");
-        }
+        Debug.Log("Windmill!");
+        hopakAnim.PlayWindmill(duration);
 
         yield return new WaitForSeconds(duration);
-
-
-
-        speedModifier = 1f;
-        trail.enabled = false;
-        yield return new WaitForSeconds(sprintCooldown);
-        isSprint = false;
     }
 
     #region Input
 
     private void OnLeft(CallbackContext context)
     {
-        if (isFinish)
-            return;
         if (leftPressed || !comboAvailable)
         {
             BreakCombo();
@@ -288,8 +214,6 @@ public class PlayerController : MonoBehaviour
 
     private void OnRight(CallbackContext context)
     {
-        if (isFinish)
-            return;
         if (!leftPressed || !comboAvailable)
         {
             BreakCombo();
@@ -305,17 +229,14 @@ public class PlayerController : MonoBehaviour
         comboCnt++;
         playerUI.ComboUpdate(comboDuration, comboCnt, comboTimeout);
         leftPressed = left;
-        IncreaseSpeed();
         hopakAnim.PlayAnimation(leftPressed, comboDuration);
-        comboDuration *= comboDurationDecayRate;
-        StartCoroutine(WaitCombo()); 
+        //comboDuration *= comboDurationDecayRate;
+        //StartCoroutine(WaitCombo()); 
     }
 
 
     private void OnRotate(CallbackContext context)
     {
-        if (isFinish)
-            return;
         Vector2 mouse = context.ReadValue<Vector2>();
         float mouseX = mouse.x * mouseSensitivity * Time.deltaTime;
         transform.Rotate(0, mouseX, 0);
@@ -324,39 +245,22 @@ public class PlayerController : MonoBehaviour
 
     private void OnTurn(CallbackContext context)
     {
-        if (isFinish)
-            return;
         curRotateInput = context.ReadValue<Vector2>().x;
     }
 
     private void OnTurnEnd(CallbackContext context)
     {
-        if (isFinish)
-            return;
         curRotateInput = 0f;
     }
 
     private void OnSprint(CallbackContext context)
     {
-        if (isFinish)
-            return;
-        if (isSprint)
-            return;
-        if (sprintLevel > 0)
-        {
-            StartCoroutine(Sprint(sprintDuration));
-        }
+
     }
 
     private bool isJumping = false;
     private void OnJump(CallbackContext context)
     {
-        if (!GameInstance.Instance.commonAbilities.ContainsKey(CommonAbilityType.Jump))
-            return;
-        if (isFinish)
-            return;
-        if (isJumping)
-            return;
         isJumping = true;
         hopakPlayer.transform.DOLocalJump(Vector3.zero, 2.5f, 1, 0.8f).OnComplete(()=> isJumping = false);
     }
