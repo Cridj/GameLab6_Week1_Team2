@@ -8,6 +8,8 @@ public class SoundManager : MonoBehaviour
 
     public Dictionary<string, AudioClip> audioClips = new Dictionary<string, AudioClip>();
 
+    public AudioSource BgmSource => bgmSource;
+
 
     private void Awake()
     {
@@ -34,6 +36,20 @@ public class SoundManager : MonoBehaviour
             bgmSource.clip = audioClips[name];
             bgmSource.Play();
         }
+    }
+
+    public bool TryScheduleBgm(string name, double dspStartTime)
+    {
+        if (!audioClips.TryGetValue(name, out AudioClip clip) || bgmSource == null)
+        {
+            return false;
+        }
+
+        bgmSource.Stop();
+        bgmSource.clip = clip;
+        bgmSource.time = 0f;
+        bgmSource.PlayScheduled(dspStartTime);
+        return true;
     }
 
     public void StopBgm()

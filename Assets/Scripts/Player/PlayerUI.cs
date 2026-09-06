@@ -1,4 +1,5 @@
 using DG.Tweening;
+using GameLab.Rhythm;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,6 +8,11 @@ public class PlayerUI : MonoBehaviour
 {
     [SerializeField] private Image comboGuide;
     [SerializeField] private TextMeshProUGUI comboText;
+
+    [Header("Rhythm UI (Optional)")]
+    [SerializeField] private TextMeshProUGUI judgementText;
+    [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI nextKeyText;
 
     [SerializeField] private float textPunchScale = 1.3f;
 
@@ -65,5 +71,44 @@ public class PlayerUI : MonoBehaviour
     {
         comboText.text = "0";
         comboGuide.gameObject.SetActive(false);
+    }
+
+    public void UpdateRhythmResult(RhythmJudgementResult result)
+    {
+        if (judgementText != null)
+        {
+            judgementText.text = GetJudgementLabel(result.Judgement);
+        }
+
+        if (scoreText != null)
+        {
+            scoreText.text = $"SCORE  {result.Score}";
+        }
+
+    }
+
+    public void UpdateExpectedKey(RhythmLane expectedLane)
+    {
+        if (nextKeyText != null)
+        {
+            nextKeyText.text = expectedLane == RhythmLane.Left
+                ? "NEXT  A"
+                : "NEXT  D";
+        }
+    }
+
+    private static string GetJudgementLabel(RhythmJudgement judgement)
+    {
+        switch (judgement)
+        {
+            case RhythmJudgement.WrongKey:
+                return "WRONG KEY";
+            case RhythmJudgement.RepeatedKey:
+                return "ALTERNATE A / D";
+            case RhythmJudgement.TooEarly:
+                return "TOO EARLY";
+            default:
+                return judgement.ToString().ToUpperInvariant();
+        }
     }
 }

@@ -1,4 +1,5 @@
 using DG.Tweening;
+using GameLab.Rhythm;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -13,6 +14,7 @@ public class PlayerController : MonoBehaviour
     private PlayerInput playerInput;
 
     [SerializeField] private PlayerUI playerUI;
+    [SerializeField] private SpotlightRhythmGame rhythmGame;
     private HopakAnimation hopakAnim;
 
     [SerializeField]
@@ -103,12 +105,22 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Turn"].canceled -= OnTurnEnd;
         playerInput.actions["Jump"].performed -= OnJump;
         playerInput.actions["Sprint"].performed -= OnSprint;
+
+        if (rhythmGame != null)
+        {
+            rhythmGame.Judged -= OnRhythmJudged;
+        }
     }
 
     public void Init()
     {
         //Component initialization
         hopakAnim = GetComponent<HopakAnimation>();
+
+        if (rhythmGame == null)
+        {
+            rhythmGame = FindFirstObjectByType<SpotlightRhythmGame>();
+        }
 
         //Input action binding
         playerInput.actions["Left"].performed += OnLeft;
@@ -120,6 +132,12 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Jump"].performed += OnJump;
         playerInput.actions["Sprint"].performed += OnSprint;
 
+        if (rhythmGame != null)
+        {
+            rhythmGame.Judged -= OnRhythmJudged;
+            rhythmGame.Judged += OnRhythmJudged;
+        }
+
         isStarted = true;
     }
 
@@ -129,6 +147,11 @@ public class PlayerController : MonoBehaviour
             return;
         Decelerating();
         transform.Rotate(0, curRotateInput * rotSpeed, 0);
+
+        if (rhythmGame != null && rhythmGame.IsRunning)
+        {
+            playerUI.UpdateExpectedKey(rhythmGame.ExpectedLane);
+        }
     }
 
     private void Decelerating()
@@ -203,6 +226,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnLeft(CallbackContext context)
     {
+        if (rhythmGame != null && rhythmGame.IsRunning)
+        {
+            rhythmGame.PressLeft();
+            return;
+        }
+
         if (leftPressed || !comboAvailable)
         {
             BreakCombo();
@@ -214,6 +243,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnRight(CallbackContext context)
     {
+        if (rhythmGame != null && rhythmGame.IsRunning)
+        {
+            rhythmGame.PressRight();
+            return;
+        }
+
         if (!leftPressed || !comboAvailable)
         {
             BreakCombo();
@@ -232,6 +267,24 @@ public class PlayerController : MonoBehaviour
         hopakAnim.PlayAnimation(leftPressed, comboDuration);
         //comboDuration *= comboDurationDecayRate;
         //StartCoroutine(WaitCombo()); 
+    }
+
+    private void OnRhythmJudged(RhythmJudgementResult result)
+    {
+        switch (result.Judgement)
+        {
+            case RhythmJudgement.Perfect:
+            case RhythmJudgement.Great:
+            case RhythmJudgement.Good:
+                InCreaseCombo(result.ExpectedLane == RhythmLane.Left);
+                break;
+
+            default:
+                BreakCombo();
+                break;
+        }
+
+        playerUI.UpdateRhythmResult(result);
     }
 
 

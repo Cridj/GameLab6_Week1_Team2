@@ -1,40 +1,97 @@
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
-public class SpotLightMovement : MonoBehaviour
+[DisallowMultipleComponent]
+public sealed class SpotLightMovement : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject leftSpotLight;
-    private GameObject rightSpotLight;
-    private GameObject frontSpotLight;
-    private GameObject backSpotLight;
+    [SerializeField] private Transform leftSpotLight;
+    [SerializeField] private Transform rightSpotLight;
+    [SerializeField] private Transform centerSpotLight;
+    [SerializeField] private AnimationCurve approachCurve =
+        AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private Vector3 leftStartPosition;
+    private Vector3 rightStartPosition;
+    private bool hasCapturedStartPositions;
+
+    public bool IsConfigured => leftSpotLight != null &&
+                                rightSpotLight != null &&
+                                centerSpotLight != null;
+
+    private void Awake()
     {
-        
+        CaptureStartPositions();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void UpdatePositions(
+        double songTime,
+        double leftHitTime,
+        double rightHitTime,
+        double approachDuration)
     {
-        ToCenter();
+        if (!IsConfigured || approachDuration <= 0d)
+        {
+            return;
+        }
+
+        if (!hasCapturedStartPositions)
+        {
+            CaptureStartPositions();
+        }
+
+        SetPosition(leftSpotLight, leftStartPosition, songTime, leftHitTime, approachDuration);
+        SetPosition(rightSpotLight, rightStartPosition, songTime, rightHitTime, approachDuration);
     }
 
-
-    private void ToCenter()
+    public void ResetToStart()
     {
-        int spot = 0;
-        leftSpotLight.transform.
+        if (!IsConfigured)
+        {
+            return;
+        }
+
+        if (!hasCapturedStartPositions)
+        {
+            CaptureStartPositions();
+        }
+
+        leftSpotLight.position = leftStartPosition;
+        rightSpotLight.position = rightStartPosition;
     }
 
-    /*
-     * Spotlight 소환하기.(Instantiate) Unity에 강좌가 있던 것 같다.
-     * Instantiate (SpotLight Prefab으로 만들어서) -> 가운데 지점으로 이동. 가운데 지점에 이동하는 순간 비활성화.
-     * 가장 중요한 건 채보.. 
-     * 
-    
-     
-     */
+    private void SetPosition(
+        Transform movingSpotLight,
+        Vector3 startPosition,
+        double songTime,
+        double hitTime,
+        double approachDuration)
+    {
+        double startTime = hitTime - approachDuration;
+        float progress = Mathf.Clamp01((float)((songTime - startTime) / approachDuration));
+        float curvedProgress = approachCurve.Evaluate(progress);
 
+        movingSpotLight.position = Vector3.LerpUnclamped(
+            startPosition,
+            centerSpotLight.position,
+            curvedProgress);
+    }
+
+    private void CaptureStartPositions()
+    {
+        if (!IsConfigured)
+        {
+            return;
+        }
+
+        leftStartPosition = leftSpotLight.position;
+        rightStartPosition = rightSpotLight.position;
+        hasCapturedStartPositions = true;
+    }
+
+    private void OnValidate()
+    {
+        if (!Application.isPlaying)
+        {
+            hasCapturedStartPositions = false;
+        }
+    }
 }
