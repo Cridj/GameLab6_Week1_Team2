@@ -44,5 +44,4 @@ public class HopakAnimation : MonoBehaviour
         windmill?.Invoke(animator.speed, false);
         isWindmill = false;
     }
-
 }

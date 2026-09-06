@@ -2,15 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[System.Serializable]
-public class SpawnData
-{
-    public PoolType type;
-
-    [Range(0, 100)]
-    public int weight;
-}
-
 [CreateAssetMenu(fileName = "StageSpawnData", menuName = "Scriptable Objects/StageSpawnData")]
 public class StageSpawnData : ScriptableObject
 {
@@ -19,9 +10,6 @@ public class StageSpawnData : ScriptableObject
     [Header("Initial")]
     public float initialSpawnRadius;
     public int initialNeutralAmount;
-
-    [Header("Spawn Target")]
-    public List<SpawnData> spawnDataList = new List<SpawnData>();
 
     [Space]
     public float nearPlayerSpawnRadius;

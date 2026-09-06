@@ -8,7 +8,7 @@ public class MainLobby : MonoBehaviour
         Managers.Instance.Fade.FadeOut(() =>
         {
             Managers.Instance.Sound.StopBgm();
-            SceneManager.LoadSceneAsync("GameScene");
+            SceneManager.LoadSceneAsync("Customize");
         });
     }
 

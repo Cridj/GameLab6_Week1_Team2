@@ -13,7 +13,7 @@ public class PlayerController : NetworkBehaviour
 {
 
     //Instance
-    [SerializeField] private PlayerUI playerUI;
+    public PlayerUI playerUI;
     [SerializeField] private PlayerInputManager playerInputManager;
     [SerializeField] private CharacterController cc;
     [SerializeField] private HopakAnimation hopakAnim;
@@ -170,10 +170,9 @@ public class PlayerController : NetworkBehaviour
         comboDuration = defaultDuration;
         playerUI.ComboBreak();
     }
-    private void IncreaseSpeed()
+    private void IncreaseSpeed() // TODO 대쉬 게이지 증가로 변경
     {
-        speed = Mathf.Clamp(speed + increseSpeedPerCombo, 3f, float.MaxValue);
-        maxSpeed = Mathf.Max(maxSpeed, speed);
+        speed = maxSpeed;
         playerUI.SetSpeed(speed * speedModifier);
     }
     private void InCreaseCombo(bool left)
@@ -218,16 +217,7 @@ public class PlayerController : NetworkBehaviour
         CurrentState = GameState.Sprint;
         trail.enabled = true;
         speedModifier = 1.5f;
-        if (GameInstance.Instance.hiddenAbilities.TryGetValue(HiddenAbilityType.Windmill, out var value))
-        {
-            Debug.Log("Windmill!");
-            hopakAnim.PlayWindmill(duration);
-            //TODO 윈드밀 특수효과 추가
-        }
-        else
-        {
-            Debug.Log("Sprint!");
-        }
+
 
         yield return new WaitForSeconds(duration);
 

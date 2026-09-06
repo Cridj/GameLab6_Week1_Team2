@@ -429,7 +429,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c719e38f25a9480abd2480ab621a2949, type: 2}
+  - {fileID: 2100000, guid: aadd5a709a48466c887296bb5b1b8110, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1520,13 +1520,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4e4c6e6c5e476c47930174e53e14b9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  curStageLevel: 1
-  curDNA: 0
-  curHeart: 3
-  commonAbilities:
-    _serializedList: []
-  hiddenAbilities:
-    _serializedList: []
   stageSpawnData:
     _serializedList:
     - Key: 1
@@ -2314,7 +2307,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: HOPAK VIRUS
+  m_text: HOPAK SNAKE
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8dcf3a3d533b6204c9d0be9478d039a2, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8dcf3a3d533b6204c9d0be9478d039a2, type: 2}

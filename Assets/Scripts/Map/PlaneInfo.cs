@@ -24,21 +24,7 @@ public class PlaneInfo : MonoBehaviour
 
     private void Start()
     {
-        if (GameInstance.Instance.curStageLevel == 2)
-        {
-            SpawnRandomObstacle();
-        }
-        if (GameInstance.Instance.curStageLevel == 3)
-        {
-            SpawnRandomObstacle();
-            SpawnRandomPitfall();
-        }
-        if (GameInstance.Instance.curStageLevel == 4)
-        {
-            SpawnRandomObstacle();
-            SpawnRandomPitfall();
-            StartCoroutine(DropPit());
-        }
+
     }
 
     Vector3 GetRandomPosInCollider()
@@ -54,38 +40,5 @@ public class PlaneInfo : MonoBehaviour
 
         Vector3 respawnPosition = originPosition + RandomPostion;
         return respawnPosition;
-    }
-
-    [ContextMenu("Spawn Pit Test")]
-    public void SpawnRandomPitfall()
-    {
-        for(int i = 0; i < spawnPitPerPlane; i++)
-        {
-            var pos = GetRandomPosInCollider();
-
-            Instantiate(pitPrefab, pos, Quaternion.identity);
-        }
-    }
-
-    [ContextMenu("Spawn Obstacle Test")]
-    public void SpawnRandomObstacle()
-    {
-        for (int i = 0; i < spawnObstaclePerPlane; i++)
-        {
-            var pos = GetRandomPosInCollider();
-
-            Instantiate(obstaclePrefab, pos, Quaternion.identity);
-        }
-    }
-
-    IEnumerator DropPit()
-    {
-        while(true)
-        {
-            var pos = GetRandomPosInCollider();
-            GameObject go = Instantiate(dopPitPrefab, new Vector3(pos.x, 100f, pos.z), Quaternion.identity);
-            yield return new WaitForSeconds(dropDelay);
-            Destroy(go, 10f);
-        }
     }
 }

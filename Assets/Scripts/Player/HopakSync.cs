@@ -3,19 +3,52 @@ using UnityEngine;
 
 public class HopakSync : NetworkBehaviour
 {
-    public HopakAnimation remote, local;
-
+    public HopakAnimation remoteAnim, localAnim;
+    public FollowerManager remoteFollower, localFollower;
 
     public override void OnStartClient()
     {
-        local.rightAction += (speed, type) =>
+        localAnim.rightAction += (speed, type) =>
         {
             SyncAnimationAck(speed, type);
         };
-        local.leftAction += (speed, type) =>
+        localAnim.leftAction += (speed, type) =>
         {
             SyncAnimationAck(speed, type);
         };
+
+        localFollower.onSpawn += (id) =>
+        {
+            SpawnNeutralReq(id);
+        };
+
+        SyncOtherFollowersReq();
+    }
+
+    [ServerRpc]
+    private void SyncOtherFollowersReq()
+    {
+    }
+
+
+    [ServerRpc]
+    private void SpawnNeutralReq(int id)
+    {
+        SyncNeutral(id);
+    }
+
+    [Server]
+    private void SyncNeutral(int id)
+    {
+        GameManager.Instance.DespawnNeutral(id);
+        NetworkPlayer networkPlayer = GetComponent<NetworkPlayer>();
+        if (networkPlayer != null)
+            networkPlayer.AddFollowerOnServer();
+    }
+
+    [ObserversRpc(ExcludeOwner = true)]
+    private void SyncSpawnNeutralAck(int id)
+    {
     }
 
 
@@ -28,6 +61,6 @@ public class HopakSync : NetworkBehaviour
     [ObserversRpc(ExcludeOwner = true)]
     private void SyncAnimationReq(float speed, bool type)
     {
-        remote.PlayAnimation(type, speed);
+        remoteAnim.PlayAnimation(type, speed);
     }
 }

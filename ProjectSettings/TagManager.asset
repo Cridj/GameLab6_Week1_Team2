@@ -6,6 +6,8 @@ TagManager:
   tags:
   - JuniorHopak
   - Pit
+  - Neutral
+  - Follower
   layers:
   - Default
   - TransparentFX

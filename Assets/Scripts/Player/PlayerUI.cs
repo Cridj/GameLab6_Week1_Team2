@@ -1,5 +1,7 @@
 using DG.Tweening;
+using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +14,11 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private float textPunchScale = 1.3f;
 
     [SerializeField] private TextMeshProUGUI currentInfection;
+
+    [SerializeField] private Transform rankRoot;
+    [SerializeField] private UI_Rank[] rank;
+
+
     private Color guideOriginColor;
     private void Start()
     {
@@ -38,6 +45,24 @@ public class PlayerUI : MonoBehaviour
         comboGuide.transform.DOScale(0.5f, duration).OnComplete(() => comboGuide.transform.DOScale(Vector3.one * 0.3f, timeout));
         comboGuide.gameObject.SetActive(true);
     }
+
+
+
+    public void UpdateLeaderboard(RankingInfo[] info)
+    {
+        var sort = info
+            .OrderByDescending(data => int.TryParse(data.score, out int score) ? score : 0)
+            .ThenBy(data => data.name)
+            .ToArray();
+
+        int count = Mathf.Min(rank.Length, sort.Length);
+        for (int i = 0; i < count; i++)
+        {
+            rank[i].nickName.text = sort[i].name;
+            rank[i].score.text = sort[i].score;
+        }
+    }
+
 
     private void UpdateComboText(int cnt, float duration)
     {
