@@ -15,6 +15,7 @@ public class NetworkPlayer : NetworkBehaviour
     public PlayerController myController;
 
     private readonly SyncVar<int> followerCount = new();
+    private readonly SyncVar<bool> deathState = new();
     private readonly FollowerPath serverPath = new();
     private readonly FollowerPath clientPath = new();
     private readonly List<Vector3> pendingPathPoints = new(16);
@@ -58,14 +59,18 @@ public class NetworkPlayer : NetworkBehaviour
     private void Awake()
     {
         followerCount.OnChange += OnFollowerCountChanged;
+        deathState.OnChange += OnDeathStateChanged;
         desireScale = transform.localScale;
     }
 
     public void OnSprint(bool sprint)
     {
+        if (isDead)
+            return;
         foreach(var trail in trails)
         {
-            trail.SetActive(sprint);
+            if (trail != null)
+                trail.SetActive(sprint);
         }
     }
 
@@ -132,7 +137,6 @@ public class NetworkPlayer : NetworkBehaviour
         if (IsOwner)
         {
             remote.SetActive(false);
-            Destroy(remote);
             local.SetActive(true);
             remoteFollower = local.GetComponentInChildren<FollowerManager>(true);
             JoinGameReq(NetworkObject.OwnerId, GameInstance.Instance.CustomizeInfo);
@@ -141,13 +145,15 @@ public class NetworkPlayer : NetworkBehaviour
         else
         {
             local.SetActive(false);
-            Destroy(local);
             remote.SetActive(true);
             remoteFollower = remote.GetComponentInChildren<FollowerManager>(true);
         }
 
         GameManager.Instance.AddPlayer(this, OwnerId);
-        ApplyFollowerCount(followerCount.Value);
+        if (deathState.Value)
+            ApplyDeathState();
+        else
+            ApplyFollowerCount(followerCount.Value);
     }
 
     public override void OnStartServer()
@@ -177,6 +183,21 @@ public class NetworkPlayer : NetworkBehaviour
         base.OnStopServer();
     }
 
+    public override void OnStopClient()
+    {
+        if (myController != null)
+            myController.GameOver();
+        StopFollowers();
+        if (GameManager.Instance != null)
+            GameManager.Instance.RemovePlayer(this, OwnerId);
+        base.OnStopClient();
+    }
+
+    private void OnDestroy()
+    {
+        followerCount.OnChange -= OnFollowerCountChanged;
+        deathState.OnChange -= OnDeathStateChanged;
+    }
     public override void OnSpawnServer(NetworkConnection connection)
     {
         base.OnSpawnServer(connection);
@@ -242,17 +263,46 @@ public class NetworkPlayer : NetworkBehaviour
 
     public void OnDie(string ownerName)
     {
-        if (isDead)
+        if (!IsOwner || isDead)
             return;
-        isDead = true;
-        //TODO 공격자 정보 UI에 표시해주기
-        OnDieReq(NetworkObject.OwnerId, ownerName);
-        diePanel.SetActive(true);
         mainCam.transform.SetParent(transform);
         UIPanel.transform.SetParent(transform);
+        diePanel.SetActive(true);
         myController.playerUI.UpdateDieText(ownerName);
-        Destroy(local.gameObject);
+        ApplyDeathState();
+        OnDieReq(ownerName);
         StartCoroutine(OnDieReturnMain());
+    }
+
+    private void OnDeathStateChanged(bool previous, bool next, bool asServer)
+    {
+        if (!asServer && OnStartClientCalled && next)
+            ApplyDeathState();
+    }
+
+    private void ApplyDeathState()
+    {
+        isDead = true;
+        if (myController != null)
+            myController.GameOver();
+        StopFollowers();
+        foreach (Collider collider in GetComponents<Collider>())
+            collider.enabled = false;
+        foreach (GameObject trail in trails)
+        {
+            if (trail != null)
+                trail.SetActive(false);
+        }
+        if (local != null)
+            local.SetActive(false);
+        if (remote != null)
+            remote.SetActive(false);
+    }
+
+    private void StopFollowers()
+    {
+        foreach (FollowerManager manager in GetComponentsInChildren<FollowerManager>(true))
+            manager.StopFollowing();
     }
 
     private IEnumerator OnDieReturnMain()
@@ -262,20 +312,23 @@ public class NetworkPlayer : NetworkBehaviour
             yield return null;
             if(Input.GetKeyDown(KeyCode.Space))
             {
-                Managers.Instance.Fade.FadeOut(() =>
-                {
-                    UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("MainLobby");
-                });
+                GameScene scene = FindFirstObjectByType<GameScene>();
+                if (scene != null)
+                    scene.ReturnToMain();
+                yield break;
             }
         }
     }
 
 
     [ServerRpc]
-    private void OnDieReq(int clientId, string instigator)
+    private void OnDieReq(string instigator)
     {
-        isDead = true;
-        GameManager.Instance.OnDiePlayer(clientId, instigator);
+        if (deathState.Value)
+            return;
+        deathState.Value = true;
+        ApplyDeathState();
+        GameManager.Instance.OnDiePlayer(OwnerId, instigator);
     }
 
     private Vector3 desireScale = Vector3.one;

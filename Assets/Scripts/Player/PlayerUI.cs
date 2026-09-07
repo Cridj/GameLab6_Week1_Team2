@@ -21,11 +21,20 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI killlogTextPrefab;
     [SerializeField] private Transform killlogRoot;
     private float desireFilled;
+    private Coroutine scrollCoroutine;
 
      
 
 
     private Color guideOriginColor;
+    private void Awake()
+    {
+        if (scrollRect == null && killlogRoot != null)
+            scrollRect = killlogRoot.GetComponentInParent<ScrollRect>(true);
+        if (scrollRect != null && scrollRect.content == null)
+            scrollRect.content = killlogRoot as RectTransform;
+    }
+
     private void Start()
     {
         guideOriginColor = comboGuide.color;
@@ -51,27 +60,56 @@ public class PlayerUI : MonoBehaviour
         if(ran == 0)
             text.text = $"{target}님이 {instigator}님에게 무참히 살해당하였습니다.";
         else if(ran == 1)
-            text.text = $"{target}님이 {instigator}님에게 정의를 실현하였습니다.";
+            text.text = $"{instigator}님이 {target}님에게 정의를 실현하였습니다.";
         else
-            text.text = $"{target}님이 {instigator}님을 무자비하게 짓밟았습니다.";
+            text.text = $"{instigator}님이 {target}님을 무자비하게 짓밟았습니다.";
+        text.transform.SetAsLastSibling();
+        RefreshCanvas();
     }
     public void RefreshCanvas()
     {
-
+        if (!isActiveAndEnabled)
+            return;
+        if (scrollCoroutine != null)
+            StopCoroutine(scrollCoroutine);
+        scrollCoroutine = StartCoroutine(ScrollToBottom());
     }
 
     IEnumerator ScrollToBottom()
     {
+        yield return null;
+        if (killlogRoot is RectTransform content)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(content);
         Canvas.ForceUpdateCanvases();
-        yield return new WaitForEndOfFrame();
-        Canvas.ForceUpdateCanvases();
-        scrollRect.verticalNormalizedPosition = 0f;
+        if (scrollRect != null)
+        {
+            scrollRect.StopMovement();
+            scrollRect.verticalNormalizedPosition = 0f;
+        }
+        scrollCoroutine = null;
     }
 
     public void AddDisconnectedLog(string target)
     {
         var text = Instantiate(killlogTextPrefab, killlogRoot);
         text.text = $"{target}님이 우주로 떠났습니다.";
+        text.transform.SetAsLastSibling();
+        RefreshCanvas();
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        scrollCoroutine = null;
+        if (currentInfection != null)
+            DOTween.Kill(currentInfection.transform);
+        if (comboGuide != null)
+        {
+            DOTween.Kill(comboGuide);
+            DOTween.Kill(comboGuide.transform);
+        }
+        if (comboText != null)
+            DOTween.Kill(comboText.transform);
     }
     private void ShowComboGuide(float duration = 0.4f, float timeout = 0.5f)
     {

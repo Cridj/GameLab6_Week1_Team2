@@ -79,37 +79,66 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] GameObject[] trails;
 
 
-    private PlayerState CurrentState;
-    void Start()
-    {
-        Cursor.visible = false;
-
-    }
+    private PlayerState CurrentState = PlayerState.Idle;
+    private bool inputSubscribed;
 
     public override void OnStartClient()
     {
         base.OnStartClient();
-        if (IsOwner)
-        {
-            gameObject.name = "Loacl Player";
-        }
-        else
+        if (!IsOwner)
         {
             gameObject.name = "Remote Player";
-            Destroy(this);
+            enabled = false;
+            return;
         }
 
+        gameObject.name = "Local Player";
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
         Init();
     }
 
-    public void GameOver() => CurrentState = PlayerState.Idle;
+    public override void OnStopClient()
+    {
+        GameOver();
+        base.OnStopClient();
+    }
+
+    private void OnDisable()
+    {
+        GameOver();
+    }
+
+    private void OnDestroy()
+    {
+        UnsubscribeInput();
+    }
+
+    public void GameOver()
+    {
+        CurrentState = PlayerState.Idle;
+        speed = 0f;
+        curRotateInput = 0f;
+        speedModifier = 1f;
+        UnsubscribeInput();
+        StopAllCoroutines();
+        foreach (GameObject trail in trails)
+        {
+            if (trail != null)
+                trail.SetActive(false);
+        }
+    }
 
     #region Initialize 
 
     public void Init()
     {
+        if (!IsOwner || !IsClientInitialized || !isActiveAndEnabled)
+            return;
         //Component initialization
         hopakAnim = GetComponent<HopakAnimation>();
+        if (networkPlayer == null)
+            networkPlayer = GetComponentInParent<NetworkPlayer>();
 
         SubscribeInput();
         CurrentState = PlayerState.Playing;
@@ -117,18 +146,34 @@ public class PlayerController : NetworkBehaviour
 
     private void SubscribeInput()
     {
+        if (inputSubscribed || playerInputManager == null)
+            return;
         playerInputManager.Subscribe("Left", Left);
         playerInputManager.Subscribe("Right", Right);
         playerInputManager.Subscribe("Rotate", Rotate);
         playerInputManager.Subscribe("Sprint", Sprint);
         playerInputManager.Subscribe("SprintEnd", SprintEnd);
+        inputSubscribed = true;
+    }
+
+    private void UnsubscribeInput()
+    {
+        if (playerInputManager != null)
+        {
+            playerInputManager.Unsubscribe("Left", Left);
+            playerInputManager.Unsubscribe("Right", Right);
+            playerInputManager.Unsubscribe("Rotate", Rotate);
+            playerInputManager.Unsubscribe("Sprint", Sprint);
+            playerInputManager.Unsubscribe("SprintEnd", SprintEnd);
+        }
+        inputSubscribed = false;
     }
 
     #endregion
 
     void Update()
     {
-        if(CurrentState == PlayerState.Idle)
+        if (!IsOwner || !IsClientInitialized || CurrentState == PlayerState.Idle)
             return;
         if(CurrentState != PlayerState.Sprint)
         {
@@ -292,7 +337,6 @@ public class PlayerController : NetworkBehaviour
         if (CurrentState == PlayerState.Idle)
             return;
         StopSprint();
-        networkPlayer.StartSprint();
     }
 
     private void StopSprint()
@@ -301,6 +345,8 @@ public class PlayerController : NetworkBehaviour
         speedModifier = 1f;
         foreach (var trail in trails)
             trail.SetActive(false);
+        if (IsClientInitialized && IsOwner && networkPlayer != null)
+            networkPlayer.StopSprint();
     }
     #endregion
 }

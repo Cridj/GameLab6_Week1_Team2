@@ -8,28 +8,52 @@ public class HopakSync : NetworkBehaviour
 
     public override void OnStartClient()
     {
-        localAnim.rightAction += (speed, type) =>
+        base.OnStartClient();
+        if (!IsOwner)
+            return;
+        ReleaseCallbacks();
+        if (localAnim != null)
         {
-            SyncAnimationAck(speed, type);
-        };
-        localAnim.leftAction += (speed, type) =>
-        {
-            SyncAnimationAck(speed, type);
-        };
-
-        localFollower.onSpawn += (id) =>
-        {
-            SpawnNeutralReq(id);
-        };
-
-        SyncOtherFollowersReq();
+            localAnim.rightAction += OnLocalAnimation;
+            localAnim.leftAction += OnLocalAnimation;
+        }
+        if (localFollower != null)
+            localFollower.onSpawn += OnLocalSpawn;
     }
 
-    [ServerRpc]
-    private void SyncOtherFollowersReq()
+    public override void OnStopClient()
     {
+        ReleaseCallbacks();
+        base.OnStopClient();
     }
 
+    private void OnDestroy()
+    {
+        ReleaseCallbacks();
+    }
+
+    private void ReleaseCallbacks()
+    {
+        if (localAnim != null)
+        {
+            localAnim.rightAction -= OnLocalAnimation;
+            localAnim.leftAction -= OnLocalAnimation;
+        }
+        if (localFollower != null)
+            localFollower.onSpawn -= OnLocalSpawn;
+    }
+
+    private void OnLocalAnimation(float speed, bool type)
+    {
+        if (IsClientInitialized && IsOwner)
+            SyncAnimationAck(speed, type);
+    }
+
+    private void OnLocalSpawn(int id)
+    {
+        if (IsClientInitialized && IsOwner)
+            SpawnNeutralReq(id);
+    }
 
     [ServerRpc]
     private void SpawnNeutralReq(int id)
@@ -61,6 +85,7 @@ public class HopakSync : NetworkBehaviour
     [ObserversRpc(ExcludeOwner = true)]
     private void SyncAnimationReq(float speed, bool type)
     {
-        remoteAnim.PlayAnimation(type, speed);
+        if (remoteAnim != null && remoteAnim.isActiveAndEnabled)
+            remoteAnim.PlayAnimation(type, speed);
     }
 }

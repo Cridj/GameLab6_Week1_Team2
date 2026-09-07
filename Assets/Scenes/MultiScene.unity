@@ -5554,6 +5554,7 @@ MonoBehaviour:
   spawnRoot: {fileID: 676112007}
   myFollower: {fileID: 0}
   myPlayer: {fileID: 0}
+  disconnectTimeoutSeconds: 10
 --- !u!4 &1537820995
 Transform:
   m_ObjectHideFlags: 0

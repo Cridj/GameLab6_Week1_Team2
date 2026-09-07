@@ -175,6 +175,13 @@ public class FollowerManager : MonoBehaviour
         }
     }
 
+    public void StopFollowing()
+    {
+        hasDied = true;
+        StopAllCoroutines();
+        ClearFollowers();
+    }
+
     private void ClearFollowers()
     {
         foreach (GameObject follower in followers)

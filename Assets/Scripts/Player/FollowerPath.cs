@@ -3,7 +3,7 @@ using UnityEngine;
 
 public sealed class FollowerPath
 {
-    private struct Point
+    public struct Point
     {
         public Vector3 Position;
         public double Distance;
@@ -37,6 +37,11 @@ public sealed class FollowerPath
     {
         start = 0;
         Count = 0;
+    }
+
+    public Point[] GetPoints()
+    {
+        return points;
     }
 
     public bool Append(Vector3 position)

@@ -1,6 +1,8 @@
 using AYellowpaper.SerializedCollections;
 using DG.Tweening;
 using FishNet.Connection;
+using FishNet.Managing;
+using FishNet.Managing.Server;
 using FishNet.Object;
 using FishNet.Transporting;
 using System.Collections;
@@ -56,6 +58,10 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private Dictionary<int, NetworkPlayer> networkPlayers = new(); // Server Only
     [SerializeField] private List<PlayerData> currentRanking = new();
     private RankingInfo[] pendingLeaderboard;
+    private readonly Dictionary<int, string> connectedPlayerNames = new();
+    private readonly Queue<(string target, string instigator, bool disconnected)> pendingPlayerLogs = new();
+    private ServerManager subscribedServerManager;
+    [SerializeField] [Range(1, 600)] private int disconnectTimeoutSeconds = 10;
 
     private void Awake()
     {
@@ -74,13 +80,29 @@ public class GameManager : NetworkBehaviour
 
     private void Update()
     {
-        if (pendingLeaderboard != null && myPlayer != null && myPlayer.playerUI != null)
+        FlushPendingUI();
+    }
+
+    private void FlushPendingUI()
+    {
+        if (myPlayer == null || myPlayer.playerUI == null || !myPlayer.playerUI.isActiveAndEnabled)
+            return;
+
+        if (pendingLeaderboard != null)
         {
             myPlayer.playerUI.UpdateLeaderboard(pendingLeaderboard);
             pendingLeaderboard = null;
         }
-    }
 
+        while (pendingPlayerLogs.Count > 0)
+        {
+            var entry = pendingPlayerLogs.Dequeue();
+            if (entry.disconnected)
+                myPlayer.playerUI.AddDisconnectedLog(entry.target);
+            else
+                myPlayer.playerUI.AddKillLog(entry.target, entry.instigator);
+        }
+    }
 
     public override void OnStartServer()
     {
@@ -88,9 +110,54 @@ public class GameManager : NetworkBehaviour
 
         SpawnIntialNeutral();
         StartCoroutine(SpawnObjectAtInterval());
-        ServerManager.OnRemoteConnectionState += OnClientDisconnected;
+        subscribedServerManager = ServerManager;
+        subscribedServerManager.SetRemoteClientTimeout(RemoteTimeoutType.Development,
+            (ushort)Mathf.Clamp(disconnectTimeoutSeconds, 1, 600));
+        subscribedServerManager.OnRemoteConnectionState += OnClientDisconnected;
     }
 
+    public override void OnStopServer()
+    {
+        ReleaseServerCallbacks();
+        StopAllCoroutines();
+        connectedPlayerNames.Clear();
+        curruntOnlinePlayers.Clear();
+        currentRanking.Clear();
+        networkPlayers.Clear();
+        spawnData.Clear();
+        base.OnStopServer();
+    }
+
+    public override void OnStopClient()
+    {
+        pendingLeaderboard = null;
+        pendingPlayerLogs.Clear();
+        myPlayer = null;
+        myFollower = null;
+        if (!IsServerInitialized)
+            networkPlayers.Clear();
+        foreach (Neutral instance in spawnedNeutral.Values)
+        {
+            if (instance != null)
+                Destroy(instance.gameObject);
+        }
+        spawnedNeutral.Clear();
+        base.OnStopClient();
+    }
+
+    private void OnDestroy()
+    {
+        ReleaseServerCallbacks();
+        if (Instance == this)
+            Instance = null;
+    }
+
+    private void ReleaseServerCallbacks()
+    {
+        if (subscribedServerManager != null)
+            subscribedServerManager.OnRemoteConnectionState -= OnClientDisconnected;
+        subscribedServerManager = null;
+    }
 
 
     public override void OnStartClient()
@@ -105,54 +172,42 @@ public class GameManager : NetworkBehaviour
     [Server]
     public void OnDiePlayer(int clientId, string instigator)
     {
-        if(curruntOnlinePlayers.TryGetValue(clientId, out var data))
-        {
-            if (networkPlayers.TryGetValue(data.clientId, out var player))
-            {
-                //Despawn(player, DespawnType.Destroy); // 굳이 서버에서 디스폰 해야하나?
-                //게임 나갈때 디스폰하면 될듯
+        if (!curruntOnlinePlayers.TryGetValue(clientId, out var data))
+            return;
 
-                if (curruntOnlinePlayers.TryGetValue(clientId, out var playerData))
-                {
-                    curruntOnlinePlayers.Remove(clientId);
-                    if (currentRanking.Contains(playerData))
-                        currentRanking.Remove(playerData);
-                    UpdateLeaderboardAck(CreateRankingInfo());
-                }
-                BroadcastPlayerDie(data, instigator);
-            }
-        }
+        curruntOnlinePlayers.Remove(clientId);
+        currentRanking.Remove(data);
+        UpdateLeaderboardAck(CreateRankingInfo());
+        BroadcastPlayerDie(data.name, instigator);
     }
 
     [Server]
     private void OnClientDisconnected(NetworkConnection connection, RemoteConnectionStateArgs args) // 게임 접속 중 클라가 강종했을때 호출
     {
-        if (args.ConnectionState == RemoteConnectionState.Stopped)
+        if (args.ConnectionState != RemoteConnectionState.Stopped)
+            return;
+
+        int clientId = connection.ClientId;
+        bool wasConnected = connectedPlayerNames.TryGetValue(clientId, out string playerName);
+        connectedPlayerNames.Remove(clientId);
+        networkPlayers.Remove(clientId);
+
+        if (curruntOnlinePlayers.TryGetValue(clientId, out var playerData))
         {
-            if (curruntOnlinePlayers.TryGetValue(connection.ClientId, out var playerData))
-            {
-                curruntOnlinePlayers.Remove(connection.ClientId);
-                if (currentRanking.Contains(playerData))
-                    currentRanking.Remove(playerData);
-                UpdateLeaderboardAck(CreateRankingInfo());
-                BroadcastClientDisconnected(connection.ClientId);
-            }
+            curruntOnlinePlayers.Remove(clientId);
+            currentRanking.Remove(playerData);
+            UpdateLeaderboardAck(CreateRankingInfo());
         }
+
+        if (wasConnected)
+            BroadcastClientDisconnected(playerName);
     }
 
     [ObserversRpc]
-    private void BroadcastClientDisconnected(int clientId) // 다른 클라가 강종했을때 호출 < 클라 전용
+    private void BroadcastClientDisconnected(string playerName)
     {
-        if (networkPlayers.TryGetValue(clientId, out var player))
-        {
-            foreach(var follower in player.remoteFollower.followers) // 팔로워들 삭제
-            {
-                Destroy(follower);
-            }
-            myPlayer.playerUI.AddDisconnectedLog(player.customInfo.nickName);
-            Destroy(player.gameObject);
-            networkPlayers.Remove(clientId);
-        }
+        pendingPlayerLogs.Enqueue((playerName, null, true));
+        FlushPendingUI();
     }
 
     [Client]
@@ -161,29 +216,22 @@ public class GameManager : NetworkBehaviour
         networkPlayers[clientId] = player;
     }
 
-
-    [ObserversRpc(ExcludeOwner = true)]
-    public void BroadcastPlayerDie(PlayerData data, string instigator) // 해당 플레이어 삭제 <<- 로컬에서 발생해서 서버엔 영향 X
+    public void RemovePlayer(NetworkPlayer player, int clientId)
     {
-        if(NetworkObject.OwnerId != data.clientId)
+        if (networkPlayers.TryGetValue(clientId, out var registered) && registered == player)
+            networkPlayers.Remove(clientId);
+        if (myPlayer != null && myPlayer == player.myController)
         {
-            if (networkPlayers.TryGetValue(data.clientId, out var player))
-            {
-                if (player.OwnerId == LocalConnection.ClientId)
-                    return;
-                var followerManager = player.GetComponentInChildren<FollowerManager>();
-                if(followerManager != null)
-                {
-                    foreach(var fol in followerManager.followers)
-                    {
-                        Destroy(fol.gameObject);
-                    }
-                }
-                Destroy(player.gameObject);
-                networkPlayers.Remove(data.clientId);
-                myPlayer.playerUI.AddKillLog(data.name, instigator);
-            }
+            myPlayer = null;
+            myFollower = null;
         }
+    }
+
+    [ObserversRpc]
+    public void BroadcastPlayerDie(string target, string instigator)
+    {
+        pendingPlayerLogs.Enqueue((target, instigator, false));
+        FlushPendingUI();
     }
 
 
@@ -193,6 +241,7 @@ public class GameManager : NetworkBehaviour
         if (curruntOnlinePlayers.TryGetValue(clientId, out PlayerData playerData))
         {
             playerData.name = customInfo.nickName;
+            playerData.customInfo = customInfo;
         }
         else
         {
@@ -206,6 +255,7 @@ public class GameManager : NetworkBehaviour
             curruntOnlinePlayers.Add(clientId, playerData);
         }
 
+        connectedPlayerNames[clientId] = customInfo.nickName;
         networkPlayers[clientId] = player;
         UpdateLeaderboardAck(CreateRankingInfo());
         ApplyCustomizeInfoAck(clientId, customInfo);
@@ -275,11 +325,7 @@ public class GameManager : NetworkBehaviour
     private void UpdateLeaderboardAck(RankingInfo[] info)
     {
         pendingLeaderboard = info;
-        if (myPlayer != null && myPlayer.playerUI != null)
-        {
-            myPlayer.playerUI.UpdateLeaderboard(info);
-            pendingLeaderboard = null;
-        }
+        FlushPendingUI();
     }
 
     private RankingInfo[] CreateRankingInfo()
@@ -352,6 +398,7 @@ public class GameManager : NetworkBehaviour
     }
 
 
+
     [ServerRpc(RequireOwnership = false)]
     private void SpawnNeutralReq(NetworkConnection caller = null)
     {
@@ -384,6 +431,20 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    [Server]
+    private void SpawnNeutralWhenPlayerDie(int clientId)
+    {
+        if (networkPlayers.TryGetValue(clientId, out var player))
+        {
+            foreach (var point in player.Path.GetPoints())
+            {
+                int id = neutralIdCounter++;
+                var pos = GetRandomPosInCollider();
+                Spawndata data = new Spawndata(id, pos);
+                spawnData.Add(id, data);
+            }
+        }
+    }
 
     [TargetRpc]
     [Client]
@@ -425,7 +486,7 @@ public class GameManager : NetworkBehaviour
     [ObserversRpc]
     private void BroadcastSprint(int clientId, bool sprint)
     {
-        if(networkPlayers.TryGetValue(clientId, out var player))
+        if(networkPlayers.TryGetValue(clientId, out var player) && player != null)
         {
             player.OnSprint(sprint);
         }
