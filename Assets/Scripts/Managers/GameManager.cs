@@ -2,6 +2,7 @@ using AYellowpaper.SerializedCollections;
 using DG.Tweening;
 using FishNet.Connection;
 using FishNet.Object;
+using FishNet.Transporting;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,7 +88,10 @@ public class GameManager : NetworkBehaviour
 
         SpawnIntialNeutral();
         StartCoroutine(SpawnObjectAtInterval());
+        ServerManager.OnRemoteConnectionState += OnClientDisconnected;
     }
+
+
 
     public override void OnStartClient()
     {
@@ -99,7 +103,7 @@ public class GameManager : NetworkBehaviour
 
 
     [Server]
-    public void OnDiePlayer(int clientId)
+    public void OnDiePlayer(int clientId, string instigator)
     {
         if(curruntOnlinePlayers.TryGetValue(clientId, out var data))
         {
@@ -115,32 +119,51 @@ public class GameManager : NetworkBehaviour
                         currentRanking.Remove(playerData);
                     UpdateLeaderboardAck(CreateRankingInfo());
                 }
-                BroadcastPlayerDie(data);
+                BroadcastPlayerDie(data, instigator);
             }
         }
     }
 
-    [ServerRpc]
-    public void OnLeftPlayer(int clientId)
+    [Server]
+    private void OnClientDisconnected(NetworkConnection connection, RemoteConnectionStateArgs args) // 게임 접속 중 클라가 강종했을때 호출
     {
-        if (curruntOnlinePlayers.TryGetValue(clientId, out var playerData))
+        if (args.ConnectionState == RemoteConnectionState.Stopped)
         {
-            curruntOnlinePlayers.Remove(clientId);
-            if (currentRanking.Contains(playerData))
-                currentRanking.Remove(playerData);
-            UpdateLeaderboardAck(CreateRankingInfo());
+            if (curruntOnlinePlayers.TryGetValue(connection.ClientId, out var playerData))
+            {
+                curruntOnlinePlayers.Remove(connection.ClientId);
+                if (currentRanking.Contains(playerData))
+                    currentRanking.Remove(playerData);
+                UpdateLeaderboardAck(CreateRankingInfo());
+                BroadcastClientDisconnected(connection.ClientId);
+            }
+        }
+    }
+
+    [ObserversRpc]
+    private void BroadcastClientDisconnected(int clientId) // 다른 클라가 강종했을때 호출 < 클라 전용
+    {
+        if (networkPlayers.TryGetValue(clientId, out var player))
+        {
+            foreach(var follower in player.remoteFollower.followers) // 팔로워들 삭제
+            {
+                Destroy(follower);
+            }
+            myPlayer.playerUI.AddDisconnectedLog(player.customInfo.nickName);
+            Destroy(player.gameObject);
+            networkPlayers.Remove(clientId);
         }
     }
 
     [Client]
     public void AddPlayer(NetworkPlayer player, int clientId) // 네트워크플레이어 리스트에 추가 - 클라 전용 별로 의미없는듯
     {
-        networkPlayers.Add(clientId, player);
+        networkPlayers[clientId] = player;
     }
 
 
     [ObserversRpc(ExcludeOwner = true)]
-    public void BroadcastPlayerDie(PlayerData data) // 해당 플레이어 삭제 <<- 로컬에서 발생해서 서버엔 영향 X
+    public void BroadcastPlayerDie(PlayerData data, string instigator) // 해당 플레이어 삭제 <<- 로컬에서 발생해서 서버엔 영향 X
     {
         if(NetworkObject.OwnerId != data.clientId)
         {
@@ -158,6 +181,7 @@ public class GameManager : NetworkBehaviour
                 }
                 Destroy(player.gameObject);
                 networkPlayers.Remove(data.clientId);
+                myPlayer.playerUI.AddKillLog(data.name, instigator);
             }
         }
     }
@@ -183,9 +207,6 @@ public class GameManager : NetworkBehaviour
         }
 
         networkPlayers[clientId] = player;
-        foreach (NetworkPlayer existingPlayer in networkPlayers.Values)
-            existingPlayer.SendInitialFollowerState(player.Owner);
-
         UpdateLeaderboardAck(CreateRankingInfo());
         ApplyCustomizeInfoAck(clientId, customInfo);
         ApplyAnotherCustomizeAck(networkPlayers[clientId].Owner, curruntOnlinePlayers);
@@ -393,5 +414,26 @@ public class GameManager : NetworkBehaviour
             n.transform.position = data.pos;
             spawnedNeutral.Add(id, n);
         }
+    }
+
+    [Server]
+    public void OnStartSprint(int clientId)
+    {
+        BroadcastSprint(clientId, true);
+    }
+
+    [ObserversRpc]
+    private void BroadcastSprint(int clientId, bool sprint)
+    {
+        if(networkPlayers.TryGetValue(clientId, out var player))
+        {
+            player.OnSprint(sprint);
+        }
+    }
+
+    [Server]
+    public void OnStopSprint(int clientId)
+    {
+        BroadcastSprint(clientId, false);
     }
 }

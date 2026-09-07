@@ -2,28 +2,49 @@ using AYellowpaper.SerializedCollections;
 using FishNet.Connection;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[DefaultExecutionOrder(100)]
 public class NetworkPlayer : NetworkBehaviour
 {
     public GameObject local, remote;
     public FollowerManager remoteFollower;
     public PlayerController myController;
 
-    private readonly Queue<int> pendingFollowerCounts = new();
     private readonly SyncVar<int> followerCount = new();
-    private readonly List<Vector3> serverFollowerPositions = new();
-    private readonly List<Vector3> serverPositionHistory = new();
-    [SerializeField] private float serverPathPointDistance = 0.5f;
+    private readonly FollowerPath serverPath = new();
+    private readonly FollowerPath clientPath = new();
+    private readonly List<Vector3> pendingPathPoints = new(16);
+    [SerializeField] private float serverPathPointDistance = 0.1f;
     [SerializeField] private float serverPathSendInterval = 0.1f;
-    private float serverPathSendTimer;
-    private bool serverFollowerStateInitialized;
-    [SerializeField] private float followerCatchUpMultiplier = 1.5f;
-    [SerializeField] private float followerCatchUpAcceleration = 8f;
-    private Vector3 previousServerPlayerPosition;
-    private bool hasPreviousServerPlayerPosition;
+    [Header("Follower spacing (world units)")]
+    [Min(0.05f)] [SerializeField] private float firstFollowerBodyDistance = 0.75f;
+    [Min(0.05f)] [SerializeField] private float followerBodyDistance = 0.5f;
+    [Min(0f)] [SerializeField] private float followerClearance = 0.05f;
+    private double serverPathSendTimer;
+    private uint serverPathSequence;
+    private uint clientPathSequence;
+    private bool clientPathInitialized;
+    private bool pathSnapshotRequested;
+    private bool isDead;
+    private int maximumSpawnedFollowers = 50;
+
+    public FollowerPath Path => IsServerInitialized ? serverPath : clientPath;
+
+    public float GetFollowerSpacing(int count)
+    {
+        return Mathf.Max(0.05f, followerBodyDistance) * Utils.CalculateScale(count).x
+            + Mathf.Max(0f, followerClearance);
+    }
+
+    public float GetFirstFollowerDistance(int count)
+    {
+        return Mathf.Max(0.05f, firstFollowerBodyDistance) * Utils.CalculateScale(count).x
+            + Mathf.Max(0f, followerClearance);
+    }
 
     [SerializeField] private SerializedDictionary<int, GameObject[]> hatDict;
     [SerializeField] private SerializedDictionary<int, GameObject[]> faceDict;
@@ -37,6 +58,15 @@ public class NetworkPlayer : NetworkBehaviour
     private void Awake()
     {
         followerCount.OnChange += OnFollowerCountChanged;
+        desireScale = transform.localScale;
+    }
+
+    public void OnSprint(bool sprint)
+    {
+        foreach(var trail in trails)
+        {
+            trail.SetActive(sprint);
+        }
     }
 
 
@@ -57,9 +87,12 @@ public class NetworkPlayer : NetworkBehaviour
                 renderer.material.color = customInfo.shoesColor;
         }
 
-        var followerManager = GetComponentInChildren<FollowerManager>();
-        followerManager.customInfo = customInfo;
-        StartCoroutine(followerManager.ApplyCustomize());
+        FollowerManager followerManager = FindFollowerManager();
+        if (followerManager != null)
+        {
+            followerManager.customInfo = customInfo;
+            StartCoroutine(followerManager.ApplyCustomize());
+        }
     }
     
 
@@ -98,68 +131,88 @@ public class NetworkPlayer : NetworkBehaviour
 
         if (IsOwner)
         {
+            remote.SetActive(false);
             Destroy(remote);
             local.SetActive(true);
+            remoteFollower = local.GetComponentInChildren<FollowerManager>(true);
             JoinGameReq(NetworkObject.OwnerId, GameInstance.Instance.CustomizeInfo);
             GameManager.Instance.myPlayer = myController;
         }
         else
         {
+            local.SetActive(false);
             Destroy(local);
             remote.SetActive(true);
+            remoteFollower = remote.GetComponentInChildren<FollowerManager>(true);
         }
 
         GameManager.Instance.AddPlayer(this, OwnerId);
         ApplyFollowerCount(followerCount.Value);
-        StartCoroutine(ProcessPendingWhenReady());
     }
 
-    private void Update()
+    public override void OnStartServer()
     {
-        if (!IsServerInitialized)
+        base.OnStartServer();
+        FollowerManager settings = FindFollowerManager();
+        maximumSpawnedFollowers = settings == null ? 50 : Mathf.Max(1, settings.maxFollowerPerLine);
+        serverPath.Clear();
+        pendingPathPoints.Clear();
+        serverPathSequence = 0;
+        serverPathSendTimer = 0d;
+        isDead = false;
+
+        Vector3 forward = transform.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 0.0001f)
+            forward = Vector3.forward;
+        serverPath.Append(transform.position - forward.normalized * GetRetainedPathDistance());
+        serverPath.Append(transform.position);
+        serverPathSequence = (uint)serverPath.Count;
+        TimeManager.OnPostTick += RecordServerPath;
+    }
+
+    public override void OnStopServer()
+    {
+        TimeManager.OnPostTick -= RecordServerPath;
+        base.OnStopServer();
+    }
+
+    public override void OnSpawnServer(NetworkConnection connection)
+    {
+        base.OnSpawnServer(connection);
+        SendInitialFollowerState(connection);
+    }
+
+    private void RecordServerPath()
+    {
+        if (isDead)
             return;
 
-        if (!serverFollowerStateInitialized || serverFollowerPositions.Count == 0)
-            return;
-
-        serverPathSendTimer -= Time.deltaTime;
-        if (serverPathSendTimer <= 0f &&
-            (serverPositionHistory.Count == 0 ||
-             Vector3.Distance(transform.position, serverPositionHistory[0]) >= serverPathPointDistance))
+        serverPathSendTimer -= TimeManager.TickDelta;
+        Vector3 position = transform.position;
+        position.y = 0f;
+        float distance = Vector3.Distance(position, serverPath.Newest);
+        bool sendNow = serverPathSendTimer <= 0d;
+        if (distance >= Mathf.Max(0.05f, serverPathPointDistance) || (sendNow && distance > 0.001f))
         {
-            serverPathSendTimer = serverPathSendInterval;
-            serverPositionHistory.Insert(0, transform.position);
-            AddPathPointObserversRpc(transform.position);
-            TrimServerPositionHistory();
+            if (serverPath.Append(position))
+            {
+                serverPathSequence++;
+                pendingPathPoints.Add(position);
+                serverPath.Trim(GetRetainedPathDistance());
+            }
         }
 
-        float deltaTime = Mathf.Max(Time.deltaTime, 0.0001f);
-        float playerSpeed = hasPreviousServerPlayerPosition
-            ? Vector3.Distance(transform.position, previousServerPlayerPosition) / deltaTime
-            : GetFollowerSpeed();
-        previousServerPlayerPosition = transform.position;
-        hasPreviousServerPlayerPosition = true;
-
-        for (int i = 0; i < serverFollowerPositions.Count; i++)
+        if (sendNow || pendingPathPoints.Count >= 16)
         {
-            int historyIndex = Mathf.Min(
-                i == 0
-                    ? Mathf.RoundToInt(GetFirstFollowerGap())
-                    : Mathf.RoundToInt(GetFirstFollowerGap() + i * GetFollowerGap()),
-                serverPositionHistory.Count - 1);
-            Vector3 target = serverPositionHistory[historyIndex];
-            target.y = GetFollowerYOffset();
-            float distance = Vector3.Distance(serverFollowerPositions[i], target);
-            float followSpeed = Mathf.Max(
-                GetFollowerSpeed(),
-                playerSpeed * followerCatchUpMultiplier);
-            followSpeed += distance * followerCatchUpAcceleration;
-            serverFollowerPositions[i] = Vector3.MoveTowards(
-                serverFollowerPositions[i],
-                target,
-                followSpeed * deltaTime);
+            serverPathSendTimer = Mathf.Max(0.05f, serverPathSendInterval);
+            if (pendingPathPoints.Count > 0)
+            {
+                uint firstSequence = serverPathSequence - (uint)pendingPathPoints.Count + 1;
+                AddPathPointsObserversRpc(firstSequence, pendingPathPoints.ToArray());
+                pendingPathPoints.Clear();
+            }
         }
-
     }
 
     [ServerRpc]
@@ -170,7 +223,7 @@ public class NetworkPlayer : NetworkBehaviour
 
     private void OnFollowerCountChanged(int previous, int next, bool asServer)
     {
-        if (asServer || IsOwner)
+        if (asServer || !OnStartClientCalled)
             return;
 
         ApplyFollowerCount(next);
@@ -178,67 +231,22 @@ public class NetworkPlayer : NetworkBehaviour
 
     private void ApplyFollowerCount(int count)
     {
-        if (IsOwner)
+        if (IsOwner || isDead)
             return;
 
         FollowerManager followerManager = FindFollowerManager();
-        if (followerManager == null)
-        {
-            pendingFollowerCounts.Enqueue(count);
-            return;
-        }
-
-        followerManager.SetFollowerCount(count);
-        transform.localScale = Utils.CalculateScale(count);
-    }
-
-    private IEnumerator ProcessPendingWhenReady()
-    {
-        float timeout = 5f;
-        float elapsed = 0f;
-        float interval = 0.1f;
-
-        while (elapsed < timeout && remoteFollower == null)
-        {
-            if (remote != null)
-            {
-                remoteFollower = remote.GetComponentInChildren<FollowerManager>();
-                if (remoteFollower != null) break;
-            }
-
-            if (remoteFollower == null)
-                remoteFollower = GetComponentInChildren<FollowerManager>();
-
-            if (remoteFollower != null) break;
-
-            elapsed += interval;
-            yield return new WaitForSeconds(interval);
-        }
-
-        if (remoteFollower == null)
-        {
-            Debug.LogWarning($"[NetworkPlayer] remoteFollower not found for {gameObject.name} after waiting.");
-            yield break;
-        }
-
-        while (pendingFollowerCounts.Count > 0)
-        {
-            int count = pendingFollowerCounts.Dequeue();
-            FollowerManager followerManager = FindFollowerManager();
-            if (followerManager == null)
-                yield break;
-
+        if (followerManager != null)
             followerManager.SetFollowerCount(count);
-            transform.localScale = Utils.CalculateScale(count);
-            yield return null;
-        }
     }
 
 
     public void OnDie(string ownerName)
     {
+        if (isDead)
+            return;
+        isDead = true;
         //TODO 공격자 정보 UI에 표시해주기
-        OnDieReq(NetworkObject.OwnerId);
+        OnDieReq(NetworkObject.OwnerId, ownerName);
         diePanel.SetActive(true);
         mainCam.transform.SetParent(transform);
         UIPanel.transform.SetParent(transform);
@@ -264,56 +272,62 @@ public class NetworkPlayer : NetworkBehaviour
 
 
     [ServerRpc]
-    private void OnDieReq(int clientId)
+    private void OnDieReq(int clientId, string instigator)
     {
-        GameManager.Instance.OnDiePlayer(clientId);
+        isDead = true;
+        GameManager.Instance.OnDiePlayer(clientId, instigator);
     }
 
-    [ServerRpc]
-    private void OnLeftPlayerReq(int clientId)
-    {
-        GameManager.Instance.OnLeftPlayer(clientId);
-    }
-
-    //private void OnApplicationQuit()
-    //{
-    //    OnLeftPlayerReq(OwnerId);
-    //}
-
+    private Vector3 desireScale = Vector3.one;
 
     public void IncreaseScale(int cnt)
     {
-        Vector3 scale = Utils.CalculateScale(cnt);
-        transform.localScale = scale;
+        desireScale = Utils.CalculateScale(Mathf.Max(0, cnt));
+    }
+
+    private void Update()
+    {
+        transform.localScale = Vector3.Lerp(transform.localScale, desireScale, 10f * Time.deltaTime);
     }
 
     [Server]
     public void AddFollowerOnServer()
     {
-        if (!serverFollowerStateInitialized)
-        {
-            serverFollowerPositions.Clear();
-
-            serverPositionHistory.Clear();
-            if (serverPositionHistory.Count == 0)
-                serverPositionHistory.Add(transform.position);
-
-            serverFollowerStateInitialized = true;
-        }
-        Vector3 spawnPosition = transform.position;
-        if (serverFollowerPositions.Count > 0)
-            spawnPosition = serverFollowerPositions[serverFollowerPositions.Count - 1] - transform.forward * 1.5f;
-
-        serverFollowerPositions.Add(spawnPosition);
-        followerCount.Value = serverFollowerPositions.Count;
+        if (!isDead)
+            followerCount.Value++;
     }
 
     [ObserversRpc(ExcludeServer = true)]
-    private void AddPathPointObserversRpc(Vector3 position)
+    private void AddPathPointsObserversRpc(uint firstSequence, Vector3[] positions)
     {
-        FollowerManager followerManager = FindFollowerManager();
-        if (followerManager != null)
-            followerManager.AddAuthoritativePathPoint(position);
+        if (isDead || positions == null)
+            return;
+        if (!clientPathInitialized || firstSequence > clientPathSequence + 1)
+        {
+            if (!pathSnapshotRequested)
+            {
+                pathSnapshotRequested = true;
+                RequestPathSnapshotServerRpc();
+            }
+            return;
+        }
+
+        for (int i = 0; i < positions.Length; i++)
+        {
+            uint sequence = firstSequence + (uint)i;
+            if (sequence <= clientPathSequence)
+                continue;
+            clientPath.Append(positions[i]);
+            clientPathSequence = sequence;
+        }
+        clientPath.Trim(GetRetainedPathDistance());
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void RequestPathSnapshotServerRpc(NetworkConnection caller = null)
+    {
+        if (caller != null && NetworkObject.Observers.Contains(caller))
+            SendInitialFollowerState(caller);
     }
 
     [Server]
@@ -321,41 +335,50 @@ public class NetworkPlayer : NetworkBehaviour
     {
         InitialFollowerStateTargetRpc(
             connection,
+            serverPathSequence,
             followerCount.Value,
-            serverPositionHistory.ToArray());
+            serverPath.CopyPoints());
     }
 
     [TargetRpc]
     private void InitialFollowerStateTargetRpc(
         NetworkConnection connection,
+        uint sequence,
         int count,
         Vector3[] path)
     {
-        if (IsOwner)
-            return;
-
-        FollowerManager followerManager = FindFollowerManager();
-        if (followerManager == null)
+        if (!clientPathInitialized || sequence >= clientPathSequence)
         {
-            pendingFollowerCounts.Enqueue(count);
-            return;
+            clientPath.Load(path);
+            clientPathSequence = sequence;
+            clientPathInitialized = true;
         }
-
-        followerManager.SetAuthoritativePath(path);
-        followerManager.SetFollowerCount(count);
-        transform.localScale = Utils.CalculateScale(count);
+        pathSnapshotRequested = false;
+        ApplyFollowerCount(Mathf.Max(count, followerCount.Value));
     }
 
-    private void TrimServerPositionHistory()
+    private float GetRetainedPathDistance()
     {
-        int requiredCount = Mathf.CeilToInt(
-            GetFirstFollowerGap() + serverFollowerPositions.Count * GetFollowerGap()) + 10;
-        if (serverPositionHistory.Count > requiredCount)
-            serverPositionHistory.RemoveRange(requiredCount, serverPositionHistory.Count - requiredCount);
+        FollowerManager settings = FindFollowerManager();
+        int limit = settings == null ? maximumSpawnedFollowers : Mathf.Max(1, settings.maxFollowerPerLine);
+        int scaleCount = Mathf.Max(limit, followerCount.Value);
+        if (settings != null)
+            scaleCount = Mathf.Max(scaleCount, settings.FollowerCnt);
+        return GetFirstFollowerDistance(scaleCount) + (limit - 1) * GetFollowerSpacing(scaleCount) + 20f;
     }
 
     private FollowerManager FindFollowerManager()
     {
+        if (IsClientInitialized)
+        {
+            GameObject visual = IsOwner ? local : remote;
+            if (visual == null || isDead)
+                return null;
+            if (remoteFollower == null || !remoteFollower.transform.IsChildOf(visual.transform))
+                remoteFollower = visual.GetComponentInChildren<FollowerManager>(true);
+            return remoteFollower;
+        }
+
         if (remoteFollower != null)
             return remoteFollower;
 
@@ -367,35 +390,25 @@ public class NetworkPlayer : NetworkBehaviour
         return remoteFollower;
     }
 
-    private float GetFollowerGap()
+    public void StartSprint()
     {
-        FollowerManager manager = FindFollowerManager();
-        return manager == null
-            ? Mathf.Max(1f, Utils.CalculateScale(serverFollowerPositions.Count).x * 3f)
-            : manager.GetGapForFollowerCount(serverFollowerPositions.Count);
+        StartSprintReq(OwnerId);
     }
 
-    private float GetFirstFollowerGap()
+    [ServerRpc]
+    private void StartSprintReq(int clientId)
     {
-        FollowerManager manager = FindFollowerManager();
-        return manager == null ? 1f : manager.GetFirstFollowerGap();
+        GameManager.Instance.OnStartSprint(clientId);
     }
 
-    private float GetFollowerSpeed()
+    public void StopSprint()
     {
-        FollowerManager manager = FindFollowerManager();
-        return manager == null ? 35f : manager.GetFollowerSpeed();
+        StopSprintReq(OwnerId);
     }
 
-    private float GetFollowerYOffset()
+    [ServerRpc]
+    private void StopSprintReq(int clientId)
     {
-        FollowerManager manager = FindFollowerManager();
-        return manager == null ? 1f : manager.GetFollowerYOffset();
-    }
-
-    private float GetHistoryRecordDistance()
-    {
-        FollowerManager manager = FindFollowerManager();
-        return manager == null ? 0.2f : Mathf.Max(0.01f, manager.GetHistoryRecordDistance());
+        GameManager.Instance.OnStopSprint(clientId);
     }
 }

@@ -1,4 +1,5 @@
 using DG.Tweening;
+using System.Collections;
 using System.Linq;
 using TMPro;
 using Unity.VisualScripting;
@@ -7,6 +8,7 @@ using UnityEngine.UI;
 
 public class PlayerUI : MonoBehaviour
 {
+    [SerializeField] private ScrollRect scrollRect;
     [SerializeField] private Image comboGuide;
     [SerializeField] private TextMeshProUGUI comboText;
     [SerializeField] private TextMeshProUGUI speedText;
@@ -16,6 +18,8 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private UI_Rank[] rank;
     [SerializeField] private TextMeshProUGUI dieText;
     [SerializeField] private Image dashFilled;
+    [SerializeField] private TextMeshProUGUI killlogTextPrefab;
+    [SerializeField] private Transform killlogRoot;
     private float desireFilled;
 
      
@@ -38,6 +42,37 @@ public class PlayerUI : MonoBehaviour
         currentInfection.transform.DOPunchScale(Vector3.one * 0.4f, 0.1f).OnComplete(()=> currentInfection.transform.localScale = Vector3.one);
     }
 
+    public void AddKillLog(string target, string instigator)
+    {
+        var text = Instantiate(killlogTextPrefab, killlogRoot);
+
+        int ran = Random.Range(0, 3);
+
+        if(ran == 0)
+            text.text = $"{target}님이 {instigator}님에게 무참히 살해당하였습니다.";
+        else if(ran == 1)
+            text.text = $"{target}님이 {instigator}님에게 정의를 실현하였습니다.";
+        else
+            text.text = $"{target}님이 {instigator}님을 무자비하게 짓밟았습니다.";
+    }
+    public void RefreshCanvas()
+    {
+
+    }
+
+    IEnumerator ScrollToBottom()
+    {
+        Canvas.ForceUpdateCanvases();
+        yield return new WaitForEndOfFrame();
+        Canvas.ForceUpdateCanvases();
+        scrollRect.verticalNormalizedPosition = 0f;
+    }
+
+    public void AddDisconnectedLog(string target)
+    {
+        var text = Instantiate(killlogTextPrefab, killlogRoot);
+        text.text = $"{target}님이 우주로 떠났습니다.";
+    }
     private void ShowComboGuide(float duration = 0.4f, float timeout = 0.5f)
     {
         DOTween.Kill(comboGuide.transform);

@@ -17,6 +17,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private PlayerInputManager playerInputManager;
     [SerializeField] private CharacterController cc;
     [SerializeField] private HopakAnimation hopakAnim;
+    [SerializeField] private NetworkPlayer networkPlayer;
 
 
     //private field
@@ -38,6 +39,7 @@ public class PlayerController : NetworkBehaviour
     public float speed;
 
     public float maxSpeed = 0f;
+    public float defaultSpeed = 5f;
 
     public float Speed { get; private set; }
 
@@ -74,7 +76,6 @@ public class PlayerController : NetworkBehaviour
     bool isDecelerating;
     private float speedModifier = 1f;
 
-    [SerializeField] private float sprintCooldown = 15f;
     [SerializeField] GameObject[] trails;
 
 
@@ -165,11 +166,13 @@ public class PlayerController : NetworkBehaviour
                 decelerationTime += Time.deltaTime;
                 float t = Mathf.Clamp01(decelerationTime / stopDuration);
                 speed *= decelerationCurve.Evaluate(t);
+                if(speed < defaultSpeed)
+                    speed = defaultSpeed;
                 playerUI.SetSpeed(speed * speedModifier);
 
                 if (t >= 1f)
                 {
-                    speed = 0f;
+                    speed = defaultSpeed;
                     isDecelerating = false;
                     return;
                 }
@@ -199,10 +202,12 @@ public class PlayerController : NetworkBehaviour
         hopakAnim.PlayAnimation(leftPressed, comboDuration);
         comboDuration *= comboDurationDecayRate;
 
-        if(CurrentState != PlayerState.Sprint)
+        if(CurrentState != PlayerState.Sprint && availableDashTime < maxDashTime)
         {
             availableDashTime += 0.05f + comboCnt / 1500f;
-            availableDashTime = Mathf.Clamp(0f, availableDashTime, maxDashTime);
+            if (availableDashTime > maxDashTime)
+                availableDashTime = maxDashTime;
+
             playerUI.UpdateDashGauge(availableDashTime / maxDashTime);
         }
         StartCoroutine(WaitCombo());
@@ -277,15 +282,17 @@ public class PlayerController : NetworkBehaviour
         if (CurrentState == PlayerState.Sprint)
             return;
         CurrentState = PlayerState.Sprint;
-        speedModifier = 1.5f;
+        speedModifier = 2f;
         foreach(var trail in trails)
             trail.SetActive(true);
+        networkPlayer.StartSprint();
     }
     private void SprintEnd(CallbackContext context)
     {
         if (CurrentState == PlayerState.Idle)
             return;
         StopSprint();
+        networkPlayer.StartSprint();
     }
 
     private void StopSprint()

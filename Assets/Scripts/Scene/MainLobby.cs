@@ -15,6 +15,7 @@ public class MainLobby : MonoBehaviour
     private void Start()
     {
         Managers.Instance.Sound.PlayBgm("로비소리_느린버전");
+        Cursor.visible = true;
     }
 
     public void Quit()
