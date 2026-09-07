@@ -26,11 +26,8 @@ public class GameScene : MonoBehaviour
         {
             networkManager.ClientManager.StartConnection();
         }
-    }
-    private void Update()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     public void ReturnToMain()

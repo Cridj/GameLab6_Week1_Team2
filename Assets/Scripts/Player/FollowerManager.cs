@@ -89,7 +89,7 @@ public class FollowerManager : MonoBehaviour
         SetFollowerCount(FollowerCnt + 1);
         if (!isRemote && player != null && player.IsOwner && player.myController != null)
         {
-            player.myController.maxSpeed = Mathf.Clamp(player.myController.maxSpeed + 0.1f, 0f, 30f);
+            player.myController.maxSpeed = Mathf.Clamp(player.myController.maxSpeed + 0.1f, 0f, 40f);
         }
     }
 

@@ -41,7 +41,10 @@ public sealed class FollowerPath
 
     public Point[] GetPoints()
     {
-        return points;
+        Point[] result = new Point[Count];
+        for (int i = 0; i < Count; i++)
+            result[i] = At(i);
+        return result;
     }
 
     public bool Append(Vector3 position)

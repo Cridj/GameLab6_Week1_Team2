@@ -94,7 +94,6 @@ public class PlayerController : NetworkBehaviour
 
         gameObject.name = "Local Player";
         Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
         Init();
     }
 

@@ -34,6 +34,8 @@ public class NetworkPlayer : NetworkBehaviour
     private int maximumSpawnedFollowers = 50;
 
     public FollowerPath Path => IsServerInitialized ? serverPath : clientPath;
+    public int FollowerCount => Mathf.Max(0, followerCount.Value);
+    public int FollowerSpawnLimit => Mathf.Max(1, maximumSpawnedFollowers);
 
     public float GetFollowerSpacing(int count)
     {

@@ -1842,7 +1842,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ef05905a2bc5724ea5798ebaea361e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isServer: 0
+  isServer: 1
 --- !u!1 &560439384
 GameObject:
   m_ObjectHideFlags: 0
@@ -5550,11 +5550,12 @@ MonoBehaviour:
   neutralIdCounter: 0
   neutral: {fileID: 2493318080736786958, guid: 7764a4623796db94397ff670e57a9acb, type: 3}
   neutralMaxCount: 4000
-  spawnInterval: 0.2
+  deathSpawnScatterRadius: 0.35
+  spawnInterval: 0.15
   spawnRoot: {fileID: 676112007}
   myFollower: {fileID: 0}
   myPlayer: {fileID: 0}
-  disconnectTimeoutSeconds: 10
+  disconnectTimeoutSeconds: 5
 --- !u!4 &1537820995
 Transform:
   m_ObjectHideFlags: 0

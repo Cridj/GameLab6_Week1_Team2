@@ -47,6 +47,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private Neutral neutral;
 
     [SerializeField] private int neutralMaxCount = 4000;
+    [SerializeField] [Min(0f)] private float deathSpawnScatterRadius = 0.35f;
 
     [SerializeField] private float spawnInterval = 0.2f;
 
@@ -177,6 +178,7 @@ public class GameManager : NetworkBehaviour
 
         curruntOnlinePlayers.Remove(clientId);
         currentRanking.Remove(data);
+        SpawnNeutralWhenPlayerDie(clientId);
         UpdateLeaderboardAck(CreateRankingInfo());
         BroadcastPlayerDie(data.name, instigator);
     }
@@ -434,16 +436,50 @@ public class GameManager : NetworkBehaviour
     [Server]
     private void SpawnNeutralWhenPlayerDie(int clientId)
     {
-        if (networkPlayers.TryGetValue(clientId, out var player))
+        if (!networkPlayers.TryGetValue(clientId, out var player) || player == null)
+            return;
+
+        int count = player.FollowerCount;
+        if (count == 0)
+            return;
+
+        int visibleCount = Mathf.Min(count, player.FollowerSpawnLimit);
+        float firstDistance = player.GetFirstFollowerDistance(count);
+        float lastDistance = firstDistance + (visibleCount - 1) * player.GetFollowerSpacing(count);
+        float scatterRadius = Mathf.Max(0f, deathSpawnScatterRadius);
+        float spawnHeight = (plane != null ? plane.transform.position.y : player.transform.position.y) + 1f;
+        FollowerPath path = player.Path;
+        FollowerPath.Cursor cursor = path.Begin(player.transform.position, player.transform.forward);
+        List<Spawndata> batch = new(Mathf.Min(count, 128));
+
+        for (int i = 0; i < count; i++)
         {
-            foreach (var point in player.Path.GetPoints())
+            float t = count > 1 ? i / (float)(count - 1) : 0f;
+            float distance = Mathf.Lerp(firstDistance, lastDistance, t);
+            Vector3 position = path.Behind(ref cursor, distance, out _);
+            Vector2 offset = Random.insideUnitCircle * scatterRadius;
+            position.x += offset.x;
+            position.z += offset.y;
+            position.y = spawnHeight;
+
+            int id = neutralIdCounter++;
+            Spawndata data = new Spawndata(id, position);
+            spawnData.Add(id, data);
+            batch.Add(data);
+
+            if (batch.Count == 128 || i == count - 1)
             {
-                int id = neutralIdCounter++;
-                var pos = GetRandomPosInCollider();
-                Spawndata data = new Spawndata(id, pos);
-                spawnData.Add(id, data);
+                SpawnNeutralBatchAck(batch.ToArray());
+                batch.Clear();
             }
         }
+    }
+
+    [ObserversRpc]
+    private void SpawnNeutralBatchAck(Spawndata[] batch)
+    {
+        foreach (Spawndata data in batch)
+            SpawnNeutralLocal(data.id, data.pos);
     }
 
     [TargetRpc]
@@ -452,14 +488,7 @@ public class GameManager : NetworkBehaviour
     {
         foreach (var data in dict)
         {
-            if (!spawnedNeutral.ContainsKey(data.Key))
-            {
-                Neutral n = Instantiate(neutral);
-                n.transform.SetParent(spawnRoot);
-                n.Id = data.Key;
-                n.transform.position = data.Value.pos;
-                spawnedNeutral.Add(data.Key, n);
-            }
+            SpawnNeutralLocal(data.Key, data.Value.pos);
         }
     }
 
@@ -467,14 +496,16 @@ public class GameManager : NetworkBehaviour
     [ObserversRpc]
     private void SpawnNeutralAck(int id, Spawndata data)
     {
-        if (!spawnedNeutral.ContainsKey(id))
-        {
-            Neutral n = Instantiate(neutral);
-            n.transform.SetParent(spawnRoot);
-            n.Id = id;
-            n.transform.position = data.pos;
-            spawnedNeutral.Add(id, n);
-        }
+        SpawnNeutralLocal(id, data.pos);
+    }
+
+    private void SpawnNeutralLocal(int id, Vector3 position)
+    {
+        if (spawnedNeutral.ContainsKey(id))
+            return;
+        Neutral instance = Instantiate(neutral, position, neutral.transform.rotation, spawnRoot);
+        instance.Id = id;
+        spawnedNeutral.Add(id, instance);
     }
 
     [Server]
