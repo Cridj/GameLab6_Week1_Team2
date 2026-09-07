@@ -22,10 +22,8 @@ public class PlayerInputManager : MonoBehaviour
         playerInput.actions["Left"].performed += OnLeft;
         playerInput.actions["Right"].performed += OnRight;
         playerInput.actions["Rotate"].performed += OnRotate;
-        playerInput.actions["Turn"].performed += OnTurn;
-        playerInput.actions["Turn"].canceled += OnTurnEnd;
-        playerInput.actions["Jump"].performed += OnJump;
         playerInput.actions["Sprint"].performed += OnSprint;
+        playerInput.actions["Sprint"].canceled += OnSprintEnd;
     }
 
     public void Subscribe(string key, Action<CallbackContext> action)
@@ -45,9 +43,6 @@ public class PlayerInputManager : MonoBehaviour
         playerInput.actions["Left"].performed -= OnLeft;
         playerInput.actions["Right"].performed -= OnRight;
         playerInput.actions["Rotate"].performed -= OnRotate;
-        playerInput.actions["Turn"].performed -= OnTurn;
-        playerInput.actions["Turn"].canceled -= OnTurnEnd;
-        playerInput.actions["Jump"].performed -= OnJump;
         playerInput.actions["Sprint"].performed -= OnSprint;
     }
 
@@ -70,28 +65,14 @@ public class PlayerInputManager : MonoBehaviour
         if (inputList.TryGetValue("Rotate", out Action<CallbackContext> action))
             action?.Invoke(context);
     }
-
-    private void OnTurn(CallbackContext context)
-    {
-        if (inputList.TryGetValue("Turn", out Action<CallbackContext> action))
-            action?.Invoke(context);
-    }
-
-    private void OnTurnEnd(CallbackContext context)
-    {
-        if (inputList.TryGetValue("Turn", out Action<CallbackContext> action))
-            action?.Invoke(context);
-    }
-
     private void OnSprint(CallbackContext context)
     {
         if (inputList.TryGetValue("Sprint", out Action<CallbackContext> action))
             action?.Invoke(context);
     }
-
-    private void OnJump(CallbackContext context)
+    private void OnSprintEnd(CallbackContext context)
     {
-        if (inputList.TryGetValue("Jump", out Action<CallbackContext> action))
+        if (inputList.TryGetValue("SprintEnd", out Action<CallbackContext> action))
             action?.Invoke(context);
     }
     #endregion

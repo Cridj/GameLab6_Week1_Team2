@@ -107,8 +107,28 @@ public class GameManager : NetworkBehaviour
             {
                 //Despawn(player, DespawnType.Destroy); // 굳이 서버에서 디스폰 해야하나?
                 //게임 나갈때 디스폰하면 될듯
+
+                if (curruntOnlinePlayers.TryGetValue(clientId, out var playerData))
+                {
+                    curruntOnlinePlayers.Remove(clientId);
+                    if (currentRanking.Contains(playerData))
+                        currentRanking.Remove(playerData);
+                    UpdateLeaderboardAck(CreateRankingInfo());
+                }
                 BroadcastPlayerDie(data);
             }
+        }
+    }
+
+    [ServerRpc]
+    public void OnLeftPlayer(int clientId)
+    {
+        if (curruntOnlinePlayers.TryGetValue(clientId, out var playerData))
+        {
+            curruntOnlinePlayers.Remove(clientId);
+            if (currentRanking.Contains(playerData))
+                currentRanking.Remove(playerData);
+            UpdateLeaderboardAck(CreateRankingInfo());
         }
     }
 
@@ -163,6 +183,9 @@ public class GameManager : NetworkBehaviour
         }
 
         networkPlayers[clientId] = player;
+        foreach (NetworkPlayer existingPlayer in networkPlayers.Values)
+            existingPlayer.SendInitialFollowerState(player.Owner);
+
         UpdateLeaderboardAck(CreateRankingInfo());
         ApplyCustomizeInfoAck(clientId, customInfo);
         ApplyAnotherCustomizeAck(networkPlayers[clientId].Owner, curruntOnlinePlayers);
@@ -215,9 +238,15 @@ public class GameManager : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void InitLeaderboardReq()
+    private void InitLeaderboardReq(NetworkConnection caller = null)
     {
-        UpdateLeaderboardAck(CreateRankingInfo());
+        InitLeaderboardTargetRpc(caller, CreateRankingInfo());
+    }
+
+    [TargetRpc]
+    private void InitLeaderboardTargetRpc(NetworkConnection connection, RankingInfo[] info)
+    {
+        pendingLeaderboard = info;
     }
 
 
@@ -298,21 +327,21 @@ public class GameManager : NetworkBehaviour
             Spawndata data = new Spawndata(id, pos);
             spawnData.Add(id, data);
         }
-        SpawnIntialNeutralAck(spawnData);
+        // 접속한 클라이언트가 SpawnNeutralReq를 보낼 때 그 클라이언트에게만 전달함
     }
 
 
     [ServerRpc(RequireOwnership = false)]
-    private void SpawnNeutralReq()
+    private void SpawnNeutralReq(NetworkConnection caller = null)
     {
-        SpawnNeutral();
+        SpawnNeutral(caller);
     }
 
 
     [Server]
-    private void SpawnNeutral()
+    private void SpawnNeutral(NetworkConnection connection)
     {
-        SpawnIntialNeutralAck(spawnData);
+        SpawnIntialNeutralAck(connection, spawnData);
     }
 
     [Server]
@@ -335,9 +364,9 @@ public class GameManager : NetworkBehaviour
     }
 
 
-    [ObserversRpc]
+    [TargetRpc]
     [Client]
-    private void SpawnIntialNeutralAck(Dictionary<int, Spawndata> dict)
+    private void SpawnIntialNeutralAck(NetworkConnection connection, Dictionary<int, Spawndata> dict)
     {
         foreach (var data in dict)
         {

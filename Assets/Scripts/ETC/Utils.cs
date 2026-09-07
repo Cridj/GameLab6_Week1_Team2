@@ -14,6 +14,6 @@ public static class Utils
 
     public static Vector3 CalculateScale(int cnt)
     {
-        return Vector3.one * ((float)cnt / 50 + 1);
+        return Vector3.one * ((float)cnt / 25 + 1);
     }
 }

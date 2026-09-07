@@ -1,7 +1,7 @@
 using AYellowpaper.SerializedCollections;
 using FishNet.Connection;
 using FishNet.Object;
-using NUnit.Framework;
+using FishNet.Object.Synchronizing;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,14 +12,13 @@ public class NetworkPlayer : NetworkBehaviour
     public FollowerManager remoteFollower;
     public PlayerController myController;
 
-    private Queue<(List<Vector3> positions, List<Vector3> history)> pendingInits = new();
-
-    [SerializeField] private float followerSnapshotInterval = 0.1f;
+    private readonly Queue<int> pendingFollowerCounts = new();
+    private readonly SyncVar<int> followerCount = new();
     private readonly List<Vector3> serverFollowerPositions = new();
     private readonly List<Vector3> serverPositionHistory = new();
-    private const int FollowerSnapshotChunkSize = 128;
-    private int serverSnapshotId;
-    private float followerSnapshotTimer;
+    [SerializeField] private float serverPathPointDistance = 0.5f;
+    [SerializeField] private float serverPathSendInterval = 0.1f;
+    private float serverPathSendTimer;
     private bool serverFollowerStateInitialized;
     [SerializeField] private float followerCatchUpMultiplier = 1.5f;
     [SerializeField] private float followerCatchUpAcceleration = 8f;
@@ -33,16 +32,11 @@ public class NetworkPlayer : NetworkBehaviour
     public CustomizeInfo customInfo;
     [SerializeField] private GameObject diePanel, UIPanel;
     [SerializeField] private GameObject mainCam;
+    [SerializeField] private GameObject[] trails;
 
-    private sealed class SnapshotChunkBuffer
+    private void Awake()
     {
-        public readonly Vector3[][] chunks;
-        public int receivedChunks;
-
-        public SnapshotChunkBuffer(int chunkCount)
-        {
-            chunks = new Vector3[chunkCount][];
-        }
+        followerCount.OnChange += OnFollowerCountChanged;
     }
 
 
@@ -62,74 +56,41 @@ public class NetworkPlayer : NetworkBehaviour
             if (renderer != null)
                 renderer.material.color = customInfo.shoesColor;
         }
+
+        var followerManager = GetComponentInChildren<FollowerManager>();
+        followerManager.customInfo = customInfo;
+        StartCoroutine(followerManager.ApplyCustomize());
     }
     
 
     private void SetHat()
     {
         foreach (var hat in hatDict.Values)
-        {
             foreach (var obj in hat)
-            {
                 if (obj != null)
-                {
-
                     obj.SetActive(false);
-                }
-            }
-
-        }
 
         if (hatDict.TryGetValue(customInfo.hatType, out var go))
-        {
             if (go != null)
-            {
                 foreach (var obj in go)
-                {
                     if (obj != null)
-                    {
-
                         obj.SetActive(true);
-                    }
-                }
-            }
-        }
     }
 
     private void SetFace()
     {
         foreach (var face in faceDict.Values)
-        {
             foreach (var obj in face)
-            {
                 if (obj != null)
-                {
-
                     obj.SetActive(false);
-                }
-            }
-
-        }
-
         if (faceDict.TryGetValue(customInfo.faceType, out var go))
-        {
             if (go != null)
-            {
                 foreach (var obj in go)
-                {
                     if (obj != null)
-                    {
-
                         obj.SetActive(true);
-                    }
-                }
-            }
-        }
     }
 
 
-
-    private readonly Dictionary<int, SnapshotChunkBuffer> pendingSnapshots = new();
 
     public override void OnStartClient()
     {
@@ -149,6 +110,7 @@ public class NetworkPlayer : NetworkBehaviour
         }
 
         GameManager.Instance.AddPlayer(this, OwnerId);
+        ApplyFollowerCount(followerCount.Value);
         StartCoroutine(ProcessPendingWhenReady());
     }
 
@@ -160,10 +122,15 @@ public class NetworkPlayer : NetworkBehaviour
         if (!serverFollowerStateInitialized || serverFollowerPositions.Count == 0)
             return;
 
-        if (serverPositionHistory.Count == 0 ||
-            Vector3.Distance(transform.position, serverPositionHistory[0]) >= GetHistoryRecordDistance())
+        serverPathSendTimer -= Time.deltaTime;
+        if (serverPathSendTimer <= 0f &&
+            (serverPositionHistory.Count == 0 ||
+             Vector3.Distance(transform.position, serverPositionHistory[0]) >= serverPathPointDistance))
         {
+            serverPathSendTimer = serverPathSendInterval;
             serverPositionHistory.Insert(0, transform.position);
+            AddPathPointObserversRpc(transform.position);
+            TrimServerPositionHistory();
         }
 
         float deltaTime = Mathf.Max(Time.deltaTime, 0.0001f);
@@ -193,12 +160,6 @@ public class NetworkPlayer : NetworkBehaviour
                 followSpeed * deltaTime);
         }
 
-        followerSnapshotTimer -= Time.deltaTime;
-        if (followerSnapshotTimer <= 0f)
-        {
-            followerSnapshotTimer = followerSnapshotInterval;
-            SendFollowerSnapshot(serverFollowerPositions);
-        }
     }
 
     [ServerRpc]
@@ -207,21 +168,28 @@ public class NetworkPlayer : NetworkBehaviour
         GameManager.Instance.OnJoinPlayer(clientId, this, customInfo);
     }
 
-    public void IntialFollower(List<Vector3> followerPositions, List<Vector3> positionHistory)
+    private void OnFollowerCountChanged(int previous, int next, bool asServer)
     {
-        var posCopy = new List<Vector3>(followerPositions ?? new List<Vector3>());
-        var histCopy = new List<Vector3>(positionHistory ?? new List<Vector3>());
+        if (asServer || IsOwner)
+            return;
+
+        ApplyFollowerCount(next);
+    }
+
+    private void ApplyFollowerCount(int count)
+    {
+        if (IsOwner)
+            return;
 
         FollowerManager followerManager = FindFollowerManager();
         if (followerManager == null)
         {
-            pendingInits.Enqueue((posCopy, histCopy));
-            Debug.Log($"[NetworkPlayer] IntialFollower queued (pending size:{pendingInits.Count}) for player {gameObject.name}");
+            pendingFollowerCounts.Enqueue(count);
             return;
         }
 
-        followerManager.ApplyServerPositions(posCopy);
-        transform.localScale = Utils.CalculateScale(posCopy.Count);
+        followerManager.SetFollowerCount(count);
+        transform.localScale = Utils.CalculateScale(count);
     }
 
     private IEnumerator ProcessPendingWhenReady()
@@ -253,27 +221,45 @@ public class NetworkPlayer : NetworkBehaviour
             yield break;
         }
 
-        while (pendingInits.Count > 0)
+        while (pendingFollowerCounts.Count > 0)
         {
-            var item = pendingInits.Dequeue();
+            int count = pendingFollowerCounts.Dequeue();
             FollowerManager followerManager = FindFollowerManager();
             if (followerManager == null)
                 yield break;
 
-            followerManager.ApplyServerPositions(item.positions);
-            transform.localScale = Utils.CalculateScale(item.positions.Count);
-            Debug.Log($"[NetworkPlayer] Applied queued InitFollower for {gameObject.name} (remaining:{pendingInits.Count})");
+            followerManager.SetFollowerCount(count);
+            transform.localScale = Utils.CalculateScale(count);
             yield return null;
         }
     }
 
 
-    public void OnDie()
+    public void OnDie(string ownerName)
     {
+        //TODO 공격자 정보 UI에 표시해주기
         OnDieReq(NetworkObject.OwnerId);
         diePanel.SetActive(true);
         mainCam.transform.SetParent(transform);
+        UIPanel.transform.SetParent(transform);
+        myController.playerUI.UpdateDieText(ownerName);
         Destroy(local.gameObject);
+        StartCoroutine(OnDieReturnMain());
+    }
+
+    private IEnumerator OnDieReturnMain()
+    {
+        while(true)
+        {
+            yield return null;
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                Managers.Instance.Fade.FadeOut(() =>
+                {
+                    UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("MainLobby");
+                });
+            }
+        }
     }
 
 
@@ -283,24 +269,22 @@ public class NetworkPlayer : NetworkBehaviour
         GameManager.Instance.OnDiePlayer(clientId);
     }
 
+    [ServerRpc]
+    private void OnLeftPlayerReq(int clientId)
+    {
+        GameManager.Instance.OnLeftPlayer(clientId);
+    }
+
+    //private void OnApplicationQuit()
+    //{
+    //    OnLeftPlayerReq(OwnerId);
+    //}
+
 
     public void IncreaseScale(int cnt)
     {
         Vector3 scale = Utils.CalculateScale(cnt);
         transform.localScale = scale;
-    }
-
-    public void ApplyServerFollowerSnapshot(List<Vector3> positions)
-    {
-        FollowerManager followerManager = FindFollowerManager();
-        if (followerManager == null)
-        {
-            pendingInits.Enqueue((new List<Vector3>(positions ?? new List<Vector3>()), new List<Vector3>()));
-            return;
-        }
-
-        followerManager.ApplyServerPositions(positions);
-        transform.localScale = Utils.CalculateScale(positions == null ? 0 : positions.Count);
     }
 
     [Server]
@@ -321,64 +305,53 @@ public class NetworkPlayer : NetworkBehaviour
             spawnPosition = serverFollowerPositions[serverFollowerPositions.Count - 1] - transform.forward * 1.5f;
 
         serverFollowerPositions.Add(spawnPosition);
-        SendFollowerSnapshot(serverFollowerPositions);
-    }
-
-    private void SendFollowerSnapshot(List<Vector3> positions)
-    {
-        positions ??= new List<Vector3>();
-
-        int snapshotId = ++serverSnapshotId;
-        int chunkCount = Mathf.Max(1, Mathf.CeilToInt(positions.Count / (float)FollowerSnapshotChunkSize));
-
-        for (int chunkIndex = 0; chunkIndex < chunkCount; chunkIndex++)
-        {
-            int startIndex = chunkIndex * FollowerSnapshotChunkSize;
-            int count = Mathf.Min(FollowerSnapshotChunkSize, positions.Count - startIndex);
-            Vector3[] chunk = count > 0
-                ? positions.GetRange(startIndex, count).ToArray()
-                : new Vector3[0];
-
-            SendFollowerSnapshotChunk(snapshotId, chunkIndex, chunkCount, chunk);
-        }
+        followerCount.Value = serverFollowerPositions.Count;
     }
 
     [ObserversRpc(ExcludeServer = true)]
-    private void SendFollowerSnapshotChunk(
-        int snapshotId,
-        int chunkIndex,
-        int chunkCount,
-        Vector3[] positions)
+    private void AddPathPointObserversRpc(Vector3 position)
     {
-        if (chunkCount <= 0 || chunkIndex < 0 || chunkIndex >= chunkCount)
+        FollowerManager followerManager = FindFollowerManager();
+        if (followerManager != null)
+            followerManager.AddAuthoritativePathPoint(position);
+    }
+
+    [Server]
+    public void SendInitialFollowerState(NetworkConnection connection)
+    {
+        InitialFollowerStateTargetRpc(
+            connection,
+            followerCount.Value,
+            serverPositionHistory.ToArray());
+    }
+
+    [TargetRpc]
+    private void InitialFollowerStateTargetRpc(
+        NetworkConnection connection,
+        int count,
+        Vector3[] path)
+    {
+        if (IsOwner)
             return;
 
-        if (!pendingSnapshots.TryGetValue(snapshotId, out SnapshotChunkBuffer buffer))
+        FollowerManager followerManager = FindFollowerManager();
+        if (followerManager == null)
         {
-            buffer = new SnapshotChunkBuffer(chunkCount);
-            pendingSnapshots.Add(snapshotId, buffer);
+            pendingFollowerCounts.Enqueue(count);
+            return;
         }
 
-        if (buffer.chunks[chunkIndex] != null)
-            return;
+        followerManager.SetAuthoritativePath(path);
+        followerManager.SetFollowerCount(count);
+        transform.localScale = Utils.CalculateScale(count);
+    }
 
-        buffer.chunks[chunkIndex] = positions ?? new Vector3[0];
-        buffer.receivedChunks++;
-
-        if (buffer.receivedChunks != chunkCount)
-            return;
-
-        List<Vector3> completeSnapshot = new List<Vector3>();
-        for (int i = 0; i < buffer.chunks.Length; i++)
-        {
-            if (buffer.chunks[i] == null)
-                return;
-
-            completeSnapshot.AddRange(buffer.chunks[i]);
-        }
-
-        pendingSnapshots.Remove(snapshotId);
-        ApplyServerFollowerSnapshot(completeSnapshot);
+    private void TrimServerPositionHistory()
+    {
+        int requiredCount = Mathf.CeilToInt(
+            GetFirstFollowerGap() + serverFollowerPositions.Count * GetFollowerGap()) + 10;
+        if (serverPositionHistory.Count > requiredCount)
+            serverPositionHistory.RemoveRange(requiredCount, serverPositionHistory.Count - requiredCount);
     }
 
     private FollowerManager FindFollowerManager()

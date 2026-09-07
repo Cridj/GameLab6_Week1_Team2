@@ -1520,6 +1520,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4e4c6e6c5e476c47930174e53e14b9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CustomizeInfo:
+    nickName: 
+    bodyColor: {r: 0, g: 0, b: 0, a: 0}
+    shoesColor: {r: 0, g: 0, b: 0, a: 0}
+    hatType: 0
+    faceType: 0
   stageSpawnData:
     _serializedList:
     - Key: 1

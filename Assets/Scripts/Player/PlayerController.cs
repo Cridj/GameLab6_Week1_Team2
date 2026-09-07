@@ -4,7 +4,7 @@ using UnityEngine;
 using static UnityEngine.InputSystem.InputAction;
 
 
-public enum GameState
+public enum PlayerState
 {
     Playing, Sprint, Jumping, Idle
 }
@@ -30,9 +30,7 @@ public class PlayerController : NetworkBehaviour
 
     [SerializeField] private float comboTimeout = 0.3f;
     [SerializeField]
-    private TrailRenderer trail;
 
-    [SerializeField]
     [Header("Mouse Seneitivity")]
     private float mouseSensitivity = 1f;
     [SerializeField]
@@ -64,24 +62,23 @@ public class PlayerController : NetworkBehaviour
 
     [SerializeField]
     [Header("Decrease combo duration per combo")]
-    [Range(0.98f, 0.999f)] private float comboDurationDecayRate = 0.99f;
+    [Range(0.98f, 0.999f)] private float comboDurationDecayRate = 0.995f;
 
-
+    [SerializeField] private float availableDashTime = 0f;
+    [SerializeField] private float maxDashTime = 10f;
 
     [SerializeField]
     private GameObject hopakPlayer;
     [SerializeField]
-    private float sprintDuration = 5f;
     private float curRotateInput;
     bool isDecelerating;
-    private int bonusHeart;
-    private Vector3 jumpDir;
     private float speedModifier = 1f;
 
     [SerializeField] private float sprintCooldown = 15f;
+    [SerializeField] GameObject[] trails;
 
 
-    private GameState CurrentState;
+    private PlayerState CurrentState;
     void Start()
     {
         Cursor.visible = false;
@@ -104,7 +101,7 @@ public class PlayerController : NetworkBehaviour
         Init();
     }
 
-    public void GameOver() => CurrentState = GameState.Idle;
+    public void GameOver() => CurrentState = PlayerState.Idle;
 
     #region Initialize 
 
@@ -114,7 +111,7 @@ public class PlayerController : NetworkBehaviour
         hopakAnim = GetComponent<HopakAnimation>();
 
         SubscribeInput();
-        CurrentState = GameState.Playing;
+        CurrentState = PlayerState.Playing;
     }
 
     private void SubscribeInput()
@@ -123,18 +120,35 @@ public class PlayerController : NetworkBehaviour
         playerInputManager.Subscribe("Right", Right);
         playerInputManager.Subscribe("Rotate", Rotate);
         playerInputManager.Subscribe("Sprint", Sprint);
+        playerInputManager.Subscribe("SprintEnd", SprintEnd);
     }
 
     #endregion
 
     void Update()
     {
-        if (CurrentState == GameState.Idle)
+        if(CurrentState == PlayerState.Idle)
             return;
-        Decelerating();
+        if(CurrentState != PlayerState.Sprint)
+        {
+            Decelerating();
+        }
+        else if(CurrentState == PlayerState.Sprint)
+        {
+            if(availableDashTime < 0f)
+            {
+                availableDashTime = 0f;
+                CurrentState = PlayerState.Playing;
+                StopSprint();
+            }
+            else
+            {
+                availableDashTime -= Time.deltaTime;
+                playerUI.UpdateDashGauge(availableDashTime / maxDashTime);
+            }
+        }
         transform.Rotate(0, curRotateInput * rotSpeed, 0);
 
-        jumpDir.y += Physics.gravity.y * Time.deltaTime;
         cc.Move(transform.forward * speedModifier * speed * Time.deltaTime);
     }
 
@@ -184,6 +198,13 @@ public class PlayerController : NetworkBehaviour
         IncreaseSpeed();
         hopakAnim.PlayAnimation(leftPressed, comboDuration);
         comboDuration *= comboDurationDecayRate;
+
+        if(CurrentState != PlayerState.Sprint)
+        {
+            availableDashTime += 0.05f + comboCnt / 1500f;
+            availableDashTime = Mathf.Clamp(0f, availableDashTime, maxDashTime);
+            playerUI.UpdateDashGauge(availableDashTime / maxDashTime);
+        }
         StartCoroutine(WaitCombo());
     }
 
@@ -212,22 +233,6 @@ public class PlayerController : NetworkBehaviour
             yield return null;
         }
     }
-    private IEnumerator OnSprint(float duration)
-    {
-        CurrentState = GameState.Sprint;
-        trail.enabled = true;
-        speedModifier = 1.5f;
-
-
-        yield return new WaitForSeconds(duration);
-
-        speedModifier = 1f;
-        trail.enabled = false;
-        yield return new WaitForSeconds(sprintCooldown);
-
-        if(CurrentState != GameState.Idle)
-            CurrentState = GameState.Playing;
-    }
 
     #endregion
 
@@ -235,7 +240,7 @@ public class PlayerController : NetworkBehaviour
     #region Action Event
     private void Right(CallbackContext context)
     {
-        if (CurrentState == GameState.Idle)
+        if (CurrentState == PlayerState.Idle)
             return;
         if (!leftPressed || !comboAvailable)
         {
@@ -247,7 +252,7 @@ public class PlayerController : NetworkBehaviour
     }
     private void Left(CallbackContext context)
     {
-        if (CurrentState == GameState.Idle)
+        if (CurrentState == PlayerState.Idle)
             return;
         if (leftPressed || !comboAvailable)
         {
@@ -259,7 +264,7 @@ public class PlayerController : NetworkBehaviour
     }
     private void Rotate(CallbackContext context)
     {
-        if (CurrentState == GameState.Idle)
+        if (CurrentState == PlayerState.Idle)
             return;
         Vector2 mouse = context.ReadValue<Vector2>();
         float mouseX = mouse.x * mouseSensitivity * Time.deltaTime;
@@ -267,9 +272,28 @@ public class PlayerController : NetworkBehaviour
     }
     private void Sprint(CallbackContext context)
     {
-        if (CurrentState != GameState.Idle && CurrentState != GameState.Sprint)
+        if (CurrentState == PlayerState.Idle)
             return;
-        StartCoroutine(OnSprint(sprintDuration));
+        if (CurrentState == PlayerState.Sprint)
+            return;
+        CurrentState = PlayerState.Sprint;
+        speedModifier = 1.5f;
+        foreach(var trail in trails)
+            trail.SetActive(true);
+    }
+    private void SprintEnd(CallbackContext context)
+    {
+        if (CurrentState == PlayerState.Idle)
+            return;
+        StopSprint();
+    }
+
+    private void StopSprint()
+    {
+        CurrentState = PlayerState.Playing;
+        speedModifier = 1f;
+        foreach (var trail in trails)
+            trail.SetActive(false);
     }
     #endregion
 }

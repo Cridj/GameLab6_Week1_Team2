@@ -10,13 +10,15 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private Image comboGuide;
     [SerializeField] private TextMeshProUGUI comboText;
     [SerializeField] private TextMeshProUGUI speedText;
-
     [SerializeField] private float textPunchScale = 1.3f;
-
     [SerializeField] private TextMeshProUGUI currentInfection;
-
     [SerializeField] private Transform rankRoot;
     [SerializeField] private UI_Rank[] rank;
+    [SerializeField] private TextMeshProUGUI dieText;
+    [SerializeField] private Image dashFilled;
+    private float desireFilled;
+
+     
 
 
     private Color guideOriginColor;
@@ -27,7 +29,7 @@ public class PlayerUI : MonoBehaviour
 
     public void SetSpeed(float speed)
     {
-        speedText.text = speed.ToString("0") + " km/h";
+        speedText.text = speed.ToString("0.0") + " km/h";
     }
 
     public void UpdateFollowerUI(int cnt)
@@ -46,6 +48,10 @@ public class PlayerUI : MonoBehaviour
         comboGuide.gameObject.SetActive(true);
     }
 
+    public void UpdateDieText(string ownerName)
+    {
+        dieText.text = "당신은 " + ownerName + "에게 무참히 살해당했습니다.";
+    }
 
 
     public void UpdateLeaderboard(RankingInfo[] info)
@@ -63,6 +69,16 @@ public class PlayerUI : MonoBehaviour
         }
     }
 
+    public void UpdateDashGauge(float filled)
+    {
+        desireFilled = filled;
+    }
+
+    private void Update()
+    {
+        dashFilled.fillAmount = Mathf.Lerp(dashFilled.fillAmount, desireFilled, 10f * Time.deltaTime);
+    }
+
 
     private void UpdateComboText(int cnt, float duration)
     {
@@ -72,8 +88,6 @@ public class PlayerUI : MonoBehaviour
         {
             comboText.color = Color.black;
         }
-
-
         if (cnt == 10)
         {
             comboText.color = Color.red;

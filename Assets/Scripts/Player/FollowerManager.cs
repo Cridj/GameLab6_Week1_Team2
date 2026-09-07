@@ -17,8 +17,7 @@ public class FollowerManager : MonoBehaviour
     public GameObject infected;
     [SerializeField]
     public float Gap = 1f;
-    public int maxFollowerPerLine = 10;
-    public float gapBetweenLine = 1f;
+    public int maxFollowerPerLine = 100;
     [SerializeField] private float followerYOffset = 0f;
     [SerializeField] private float serverSmoothTime = 0.04f;
     [SerializeField] private float historyRecordDistance = 0.2f;
@@ -32,8 +31,10 @@ public class FollowerManager : MonoBehaviour
     public bool isInitialized = false;
     public NetworkPlayer player;
     private bool useServerPositions;
+    private bool useAuthoritativePath;
     private readonly List<Vector3> serverTargetPositions = new List<Vector3>();
     private readonly List<Vector3> serverSmoothVelocities = new List<Vector3>();
+    public CustomizeInfo customInfo;
 
     public int FollowerCnt
     {
@@ -54,7 +55,6 @@ public class FollowerManager : MonoBehaviour
         {
             positionHistory.Insert(0, transform.position);
             GameManager.Instance.myFollower = this;
-            positionHistory.Insert(0, transform.position);
         }
         else
         {
@@ -70,13 +70,17 @@ public class FollowerManager : MonoBehaviour
             return;
         }
 
-        if (!isRemote)
+        if (!isRemote || useAuthoritativePath)
         {
-            // 일정 거리마다 position 기록
-            float dist = Vector3.Distance(transform.position, positionHistory[0]);
-            if (dist >= historyRecordDistance)
+            // 로컬 플레이어만 자기 위치를 기록하고. 원격 플레이어는 서버 경로 RPC에서 받아와서 사용하기
+            if (!useAuthoritativePath)
             {
-                positionHistory.Insert(0, transform.position);
+                float dist = Vector3.Distance(transform.position, positionHistory[0]);
+                if (dist >= historyRecordDistance)
+                {
+                    positionHistory.Insert(0, transform.position);
+                    TrimPositionHistory();
+                }
             }
 
             int index = 1;
@@ -117,10 +121,12 @@ public class FollowerManager : MonoBehaviour
             {
                 if(!followers.Contains(other.gameObject))
                 {
-                    player.OnDie();
-                    foreach(var fol in followers)
+                    var follower = other.GetComponent<Follower>();
+                    if(follower != null)
                     {
-                        Destroy(fol);
+                        player.OnDie(follower.ownerName);
+                        foreach (var fol in followers)
+                            Destroy(fol);
                     }
                 }
             }
@@ -164,7 +170,7 @@ public class FollowerManager : MonoBehaviour
         return Mathf.Max(0f, firstFollowerGap);
     }
 
-    public void ApplyServerPositions(List<Vector3> positions)
+    public void ApplyServerPositions(List<Vector3> positions) // 클라에서 매프레임 서버 포지션 받아서 처리하던 구 코드 Deprecated
     {
         if (positions == null)
             positions = new List<Vector3>();
@@ -266,6 +272,11 @@ public class FollowerManager : MonoBehaviour
 
     public void MakeFollower()
     {
+        MakeFollower(true);
+    }
+
+    private void MakeFollower(bool refreshScale) // 한마리 한마리 추가
+    {
         GameObject follower;
         if (followers.Count == 0)
         {
@@ -276,9 +287,8 @@ public class FollowerManager : MonoBehaviour
             follower.transform.rotation = Quaternion.identity;
             followers.Add(follower);
 
-            FollowerCnt++;
+            InitFollower(follower, refreshScale);
         }
-
         else if (followers.Count < maxFollowerPerLine)
         {
             Vector3 spawnPos = followers[followers.Count - 1].transform.position - transform.forward * 1.5f;
@@ -287,46 +297,105 @@ public class FollowerManager : MonoBehaviour
             follower.transform.rotation = Quaternion.identity;
             followers.Add(follower);
 
-            FollowerCnt++;
+            InitFollower(follower, refreshScale);
         }
-
-        else
+        FollowerCnt++;
+        if (!isRemote) // 자기자신의 플레이어는 팔로워 늘어날때마다 스피드업
         {
-            int lineNum = FollowerCnt / maxFollowerPerLine;
-            int x = FollowerCnt % maxFollowerPerLine;
-
-            GameObject targetFollower = followers[x];
-            follower = Instantiate(infected);
-            follower.transform.parent = targetFollower.transform;
-
-            if (lineNum % 2 == 0)
-                //follower.transform.localPosition += targetFollower.transform.localRotation * Vector3.right * gapBetweenLine * (lineNum / 2);
-                follower.transform.localPosition = new Vector3(gapBetweenLine * (lineNum / 2), 0, 0);
-
-            else
-                //follower.transform.localPosition -= targetFollower.transform.right * gapBetweenLine * ((lineNum + 1) / 2);
-                follower.transform.localPosition = new Vector3(-gapBetweenLine * ((lineNum + 1) / 2), 0, 0);
-
-
-            FollowerCnt++;
+            Mathf.Clamp(player.myController.maxSpeed += 0.1f, 0f, 15f);
         }
-
         SyncGapWithScale();
+    }
 
-
-
+    private void InitFollower(GameObject follower, bool refreshScale)
+    {
         follower.GetComponentInChildren<Animator>().Play("Hopak");
+        var fol = follower.GetComponent<Follower>();
+        fol.ApplyCustomizeInfo(customInfo);
+        fol.ownerName = customInfo.nickName;
+        if (refreshScale)
+            RefreshFollowerScale();
+    }
 
+    public IEnumerator ApplyCustomize()
+    {
+        yield return new WaitForSeconds(0.1f);
 
-        foreach(var fol in followers)
+        foreach (var fol in followers)
         {
-            fol.transform.localScale = Utils.CalculateScale(FollowerCnt);
+            var follower = fol.GetComponent<Follower>();
+            if(follower != null)
+            {
+                follower.ApplyCustomizeInfo(customInfo);
+            }
+        }
+    }
+
+    public void SetFollowerCount(int targetCount)
+    {
+        targetCount = Mathf.Max(0, targetCount);
+
+        while (followers.Count < targetCount)
+            MakeFollower(false);
+
+        while (followers.Count > targetCount)
+        {
+            int lastIndex = followers.Count - 1;
+            GameObject follower = followers[lastIndex];
+            followers.RemoveAt(lastIndex);
+            if (follower != null)
+                Destroy(follower);
+        }
+
+        FollowerCnt = followers.Count;
+        SyncGapWithScale();
+        RefreshFollowerScale();
+        TrimPositionHistory();
+    }
+
+    public void AddAuthoritativePathPoint(Vector3 position)
+    {
+        useAuthoritativePath = true;
+        positionHistory.Insert(0, position);
+        TrimPositionHistory();
+    }
+
+    public void SetAuthoritativePath(IReadOnlyList<Vector3> path)
+    {
+        useAuthoritativePath = true;
+        positionHistory.Clear();
+
+        if (path != null)
+        {
+            for (int i = 0; i < path.Count; i++)
+                positionHistory.Add(path[i]);
+        }
+
+        if (positionHistory.Count == 0)
+            positionHistory.Add(transform.position);
+
+        TrimPositionHistory();
+    }
+
+    private void RefreshFollowerScale()
+    {
+        Vector3 scale = Utils.CalculateScale(FollowerCnt);
+        foreach (GameObject follower in followers)
+        {
+            if (follower != null)
+                follower.transform.localScale = scale;
         }
 
         if (player != null)
-        {
-            player.IncreaseScale(followersCnt);
-        }
+            player.IncreaseScale(FollowerCnt);
+    }
+
+    private void TrimPositionHistory()
+    {
+        int requiredCount = Mathf.CeilToInt(firstFollowerGap + followers.Count * Gap) + 10;
+        requiredCount = Mathf.Max(requiredCount, 2);
+        if (positionHistory.Count > requiredCount)
+            positionHistory.RemoveRange(requiredCount, positionHistory.Count - requiredCount);
     }
 
     private void SyncGapWithScale()
