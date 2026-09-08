@@ -118,7 +118,8 @@ public class FollowerManager : MonoBehaviour
         Follower follower = instance.GetComponent<Follower>();
         if (follower == null)
             return;
-        follower.ApplyCustomizeInfo(customInfo);
+
+        follower.ApplyCustomizeInfo(customInfo, isRemote);
         follower.ownerName = customInfo.nickName;
     }
 

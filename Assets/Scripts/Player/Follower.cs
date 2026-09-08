@@ -8,8 +8,9 @@ public class Follower : MonoBehaviour
     [SerializeField] private Renderer[] hopakRenderers;
     [SerializeField] private Renderer[] shoesRenderers;
     public string ownerName;
+    [SerializeField] private Renderer minimapIcon;
 
-    public void ApplyCustomizeInfo(CustomizeInfo customInfo)
+    public void ApplyCustomizeInfo(CustomizeInfo customInfo, bool isRemote)
     {
         SetHat(customInfo);
         SetFace(customInfo);
@@ -23,6 +24,11 @@ public class Follower : MonoBehaviour
             if (renderer != null)
                 renderer.material.color = customInfo.shoesColor;
         }
+
+        if (isRemote)
+            minimapIcon.material.color = Color.black;
+        else
+            minimapIcon.material.color = Color.red;
     }
 
 

@@ -20,6 +20,7 @@ public class NetworkPlayer : NetworkBehaviour
     private readonly FollowerPath clientPath = new();
     private readonly List<Vector3> pendingPathPoints = new(16);
     [SerializeField] private float serverPathPointDistance = 0.1f;
+    [SerializeField] private Renderer minimapIcon;
     [SerializeField] private float serverPathSendInterval = 0.1f;
     [Header("Follower spacing (world units)")]
     [Min(0.05f)] [SerializeField] private float firstFollowerBodyDistance = 0.75f;
@@ -91,9 +92,20 @@ public class NetworkPlayer : NetworkBehaviour
         foreach (var renderer in shoesRenderers)
         {
             if (renderer != null)
-                renderer.material.color = customInfo.shoesColor;
+            {
+                if (IsOwner)
+                    renderer.material.color = Color.green;
+                else
+                    renderer.material.color = Color.red;
+            }
         }
-
+        if(minimapIcon != null)
+        {
+            if (IsOwner)
+                minimapIcon.material.color = Color.red;
+            else
+                minimapIcon.material.color = Color.black;
+        }
         FollowerManager followerManager = FindFollowerManager();
         if (followerManager != null)
         {

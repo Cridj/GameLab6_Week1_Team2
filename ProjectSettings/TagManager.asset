@@ -8,6 +8,7 @@ TagManager:
   - Pit
   - Neutral
   - Follower
+  - MinimapCamera
   layers:
   - Default
   - TransparentFX
@@ -19,7 +20,7 @@ TagManager:
   - Obstacles
   - 
   - Projectile
-  - 
+  - Minimap
   - 
   - 
   - 
