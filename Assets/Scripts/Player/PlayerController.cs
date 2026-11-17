@@ -94,11 +94,16 @@ public class PlayerController : MonoBehaviour
     private int spitLevel;
     private bool isStarted = false;
     private bool isFinish = false;
+    [SerializeField] private GameObject root;
+    [SerializeField] private int moveCount;
+    
 
 
     void Start()
     {
         Cursor.visible = false;
+        Init();
+        
     }
 
 
@@ -107,8 +112,13 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Left"].performed -= OnLeft;
         playerInput.actions["Right"].performed -= OnRight;
         playerInput.actions["Rotate"].performed -= OnRotate;
-        playerInput.actions["Turn"].performed -= OnTurn;
-        playerInput.actions["Turn"].canceled -= OnTurnEnd;
+
+        playerInput.actions["Lmove"].performed -= OnLeftMove;
+        playerInput.actions["Rmove"].performed -= OnRightMove;
+        playerInput.actions["Umove"].performed -= OnUpMove;
+        playerInput.actions["Dmove"].performed -= OnDownMove;
+        /*        playerInput.actions["Turn"].performed -= OnTurn;
+                playerInput.actions["Turn"].canceled -= OnTurnEnd;*/
         playerInput.actions["Jump"].performed -= OnJump;
         playerInput.actions["Sprint"].performed -= OnSprint;
         isFinish = true;
@@ -125,8 +135,13 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Left"].performed += OnLeft;
         playerInput.actions["Right"].performed += OnRight;
         playerInput.actions["Rotate"].performed += OnRotate;
-        playerInput.actions["Turn"].performed += OnTurn;
-        playerInput.actions["Turn"].canceled += OnTurnEnd;
+        /*        playerInput.actions["Turn"].performed += OnTurn;
+                playerInput.actions["Turn"].canceled += OnTurnEnd;
+        */
+        playerInput.actions["Lmove"].performed += OnLeftMove;
+        playerInput.actions["Rmove"].performed += OnRightMove;
+        playerInput.actions["Umove"].performed += OnUpMove;
+        playerInput.actions["Dmove"].performed += OnDownMove;
 
         playerInput.actions["Jump"].performed += OnJump;
         playerInput.actions["Sprint"].performed += OnSprint;
@@ -165,6 +180,7 @@ public class PlayerController : MonoBehaviour
             }
         }
         isStarted = true;
+
     }
 
     void Update()
@@ -176,6 +192,7 @@ public class PlayerController : MonoBehaviour
 
         jumpDir.y += Physics.gravity.y * Time.deltaTime;
         cc.Move(transform.forward * speedModifier * speed * Time.deltaTime);
+        
     }
 
     private void Decelerating()
@@ -311,7 +328,7 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(WaitCombo()); 
     }
 
-
+   
     private void OnRotate(CallbackContext context)
     {
         if (isFinish)
@@ -321,6 +338,51 @@ public class PlayerController : MonoBehaviour
         transform.Rotate(0, mouseX, 0);
     }
 
+    Vector3 targetPos;
+    //여기부터 강영교
+    private void OnLeftMove(CallbackContext context)
+    {
+        if (isFinish)
+            return;
+        if (moveCount > -1)
+        {
+            Vector3 move = root.transform.position + new Vector3(-1, 0, 0);
+            moveCount -= 1;
+            targetPos = move;
+            //root.transform.position = move;
+            Debug.Log("left");
+        }
+        
+    }
+    private void OnRightMove(CallbackContext context)
+    {
+        if (isFinish)
+            return;
+        if (moveCount < 1)
+        {
+            Vector3 move = root.transform.position + new Vector3(1, 0, 0);
+            targetPos = move;
+            //root.transform.position = move;
+            Debug.Log("right");
+            moveCount += 1;
+
+        }
+
+    }
+    private void OnUpMove(CallbackContext context)
+    {
+        if (isFinish)
+            return;
+        Debug.Log("up");
+       
+    }
+    private void OnDownMove(CallbackContext context)
+    {
+        if (isFinish)
+            return;
+        Debug.Log("down");
+       
+    }
 
     private void OnTurn(CallbackContext context)
     {

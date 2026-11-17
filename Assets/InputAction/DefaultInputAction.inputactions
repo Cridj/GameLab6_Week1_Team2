@@ -34,15 +34,6 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Turn",
-                    "type": "Value",
-                    "id": "5fe9cbd5-8020-4990-8ed5-eea854ea4251",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
                     "name": "Jump",
                     "type": "Button",
                     "id": "b8ce36f3-9c57-45de-9b37-1cf3e645ed9c",
@@ -55,6 +46,42 @@
                     "name": "Sprint",
                     "type": "Button",
                     "id": "cd076c69-65dc-4521-8e50-1244f556b247",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Lmove",
+                    "type": "Button",
+                    "id": "374ce633-1495-4451-9595-3867954b5035",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Rmove",
+                    "type": "Button",
+                    "id": "f17bb791-25ee-4c17-a7c1-341b8b3706e7",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Umove",
+                    "type": "Button",
+                    "id": "4ab40bd8-4074-45d8-b73f-2890dcd45add",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Dmove",
+                    "type": "Button",
+                    "id": "bad8affa-deb6-4d39-ad76-c202641d3128",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -96,39 +123,6 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "2D Vector",
-                    "id": "db0ad7e2-e10b-40df-a29c-416042e79fd4",
-                    "path": "2DVector",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Turn",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "Left",
-                    "id": "22943490-4bd6-42d9-a30b-cdac30ccfac8",
-                    "path": "<Keyboard>/leftArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Turn",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "Right",
-                    "id": "d8d1bacf-fec7-40d9-bb46-09025ba29a7c",
-                    "path": "<Keyboard>/rightArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Turn",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
                     "name": "",
                     "id": "72cef951-2f8b-483c-ae3b-d510adeac6f2",
                     "path": "<Keyboard>/space",
@@ -158,6 +152,50 @@
                     "processors": "",
                     "groups": "",
                     "action": "Sprint",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "174b25fa-a344-48e0-b8bc-3f0586e6a534",
+                    "path": "<Keyboard>/leftArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Lmove",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2b3fd020-0e12-4433-836d-ac34bcad04d6",
+                    "path": "<Keyboard>/rightArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Rmove",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "94201e3e-2e86-4949-b6aa-cb83736d8779",
+                    "path": "<Keyboard>/upArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Umove",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "55484057-eccc-4210-8cb7-a44aa8aea813",
+                    "path": "<Keyboard>/downArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dmove",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

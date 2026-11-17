@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - JuniorHopak
+  - Trigger
+  - Wall
+  - Celing
   layers:
   - Default
   - TransparentFX
